@@ -1,0 +1,7 @@
+{
+  "name": "Somacord",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
