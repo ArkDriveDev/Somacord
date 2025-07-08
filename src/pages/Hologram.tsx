@@ -39,6 +39,7 @@ const SUDA_MODEL: HologramModel = {
 const Hologram: React.FC = () => {
   const location = useLocation<{ model?: HologramModel }>();
   const [selectedModel, setSelectedModel] = useState<HologramModel>(DEFAULT_MODEL);
+  const [originalModel, setOriginalModel] = useState<HologramModel>(DEFAULT_MODEL);
   const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [permissionGranted, setPermissionGranted] = useState(false);
   const [isResponding, setIsResponding] = useState(false);
@@ -51,32 +52,33 @@ const Hologram: React.FC = () => {
   const responseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const modelChangeTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Audio refs with better initialization
+  // Audio refs
   const clemSound = useRef<HTMLAudioElement | null>(null);
   const successSound = useRef<HTMLAudioElement | null>(null);
   const [showMusicPlayer, setShowMusicPlayer] = useState(true);
 
+  // Automatically switch to Suda when responding and back when done
   useEffect(() => {
-    // Initialize audio elements with proper error handling
+    if (isResponding) {
+      setOriginalModel(selectedModel);
+      setSelectedModel(SUDA_MODEL);
+    } else {
+      setSelectedModel(originalModel);
+    }
+  }, [isResponding]);
+
+  useEffect(() => {
     const initializeAudio = () => {
       try {
         clemSound.current = new Audio();
         clemSound.current.src = clem;
         clemSound.current.preload = 'auto';
-        try {
-          clemSound.current.load();
-        } catch (e) {
-          console.error("Failed to load clem audio:", e);
-        }
+        clemSound.current.load().catch(e => console.error("Failed to load clem audio:", e));
 
         successSound.current = new Audio();
         successSound.current.src = success;
         successSound.current.preload = 'auto';
-        try {
-          successSound.current.load();
-        } catch (e) {
-          console.error("Failed to load success audio:", e);
-        }
+        successSound.current.load().catch(e => console.error("Failed to load success audio:", e));
       } catch (error) {
         console.error("Audio initialization error:", error);
       }
@@ -84,7 +86,6 @@ const Hologram: React.FC = () => {
 
     initializeAudio();
 
-    // Set up aria-hidden observer
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
@@ -101,7 +102,6 @@ const Hologram: React.FC = () => {
 
     return () => {
       observer.disconnect();
-      // Clean up audio elements
       clemSound.current?.pause();
       clemSound.current = null;
       successSound.current?.pause();
@@ -113,13 +113,14 @@ const Hologram: React.FC = () => {
     const fromRoute = location.state?.model;
     if (fromRoute) {
       setSelectedModel(fromRoute);
+      setOriginalModel(fromRoute);
       localStorage.setItem('selectedModel', JSON.stringify(fromRoute));
     } else {
       const saved = localStorage.getItem('selectedModel');
       if (saved) {
-        setSelectedModel(JSON.parse(saved));
-      } else {
-        setSelectedModel(DEFAULT_MODEL);
+        const parsed = JSON.parse(saved);
+        setSelectedModel(parsed);
+        setOriginalModel(parsed);
       }
     }
   }, [location.state]);
@@ -130,9 +131,6 @@ const Hologram: React.FC = () => {
     VoiceService.setSystemAudioState(true);
     setIsResponding(true);
 
-    // Change the model to Suda - the onLoad handler will trigger the animation
-    setSelectedModel(SUDA_MODEL);
-
     audioRef.current.currentTime = 0;
     audioRef.current.play().catch(e => console.error("Audio play error:", e));
 
@@ -140,14 +138,6 @@ const Hologram: React.FC = () => {
       VoiceService.setSystemAudioState(false);
       setIsResponding(false);
       setIsPlayingSudaAudio(false);
-
-      // Change back to the previous model
-      const saved = localStorage.getItem('selectedModel');
-      if (saved) {
-        setSelectedModel(JSON.parse(saved));
-      } else {
-        setSelectedModel(DEFAULT_MODEL);
-      }
     };
 
     audioRef.current.onended = handleAudioEnd;
@@ -164,12 +154,10 @@ const Hologram: React.FC = () => {
 
   const toggleMic = async () => {
     if (micEnabled) {
-      // Turn off mic
       VoiceService.stopListening();
       setIsVoiceActive(false);
       setMicEnabled(false);
     } else {
-      // Turn on mic
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         stream.getTracks().forEach(track => track.stop());
@@ -199,17 +187,16 @@ const Hologram: React.FC = () => {
 
     try {
       setIsModelChanging(true);
-      VoiceService.setSystemAudioState(true); // Pause recognition
+      VoiceService.setSystemAudioState(true);
 
-      // If it's already a model object (from click)
       if (typeof modelName !== 'string') {
         setSelectedModel(modelName);
+        setOriginalModel(modelName);
         localStorage.setItem('selectedModel', JSON.stringify(modelName));
         if (successSound.current) {
           await new Promise<void>((resolve) => {
             successSound.current!.currentTime = 0;
             successSound.current!.onended = () => resolve();
-            successSound.current!.onerror = () => resolve();
             successSound.current!.play().catch(e => {
               console.error("Failed to play success audio:", e);
               resolve();
@@ -219,10 +206,8 @@ const Hologram: React.FC = () => {
         return;
       }
 
-      // If it's a string (from voice command)
       const models = await fetchAvailableModels();
       const normalizedInput = modelName.toLowerCase().trim();
-
       const model = models.find(m =>
         m.name.toLowerCase() === normalizedInput ||
         m.name.toLowerCase().includes(normalizedInput)
@@ -230,12 +215,12 @@ const Hologram: React.FC = () => {
 
       if (model) {
         setSelectedModel(model);
+        setOriginalModel(model);
         localStorage.setItem('selectedModel', JSON.stringify(model));
         if (successSound.current) {
           await new Promise<void>((resolve) => {
             successSound.current!.currentTime = 0;
             successSound.current!.onended = () => resolve();
-            successSound.current!.onerror = () => resolve();
             successSound.current!.play().catch(e => {
               console.error("Failed to play success audio:", e);
               resolve();
@@ -246,7 +231,7 @@ const Hologram: React.FC = () => {
     } catch (error) {
       console.error("Model change error:", error);
     } finally {
-      VoiceService.setSystemAudioState(false); // Resume recognition
+      VoiceService.setSystemAudioState(false);
       setIsModelChanging(false);
     }
   }, []);
@@ -274,16 +259,11 @@ const Hologram: React.FC = () => {
   useIonViewWillEnter(() => {
     document.activeElement instanceof HTMLElement && document.activeElement.blur();
 
-    // Initialize audio with better error handling
     try {
       audioRef.current = new Audio();
       audioRef.current.src = hello;
       audioRef.current.preload = 'auto';
-      try {
-        audioRef.current.load();
-      } catch (e) {
-        console.error("Failed to load hello audio:", e);
-      }
+      audioRef.current.load().catch(e => console.error("Failed to load hello audio:", e));
 
       if (audioRef.current) {
         audioRef.current.onended = () => {
@@ -312,9 +292,6 @@ const Hologram: React.FC = () => {
 
     clearTimeout(responseTimeoutRef.current as NodeJS.Timeout);
     clearTimeout(modelChangeTimeout.current as NodeJS.Timeout);
-
-    // Clear model from localStorage
-    localStorage.removeItem('selectedModel');
   });
 
   return (
@@ -326,12 +303,11 @@ const Hologram: React.FC = () => {
       </IonHeader>
 
       <IonContent fullscreen className="hologram-container">
-        {/* Mic Toggle Button - Fixed position in top right */}
         <button
           onClick={toggleMic}
           style={{
             position: 'fixed',
-            top: '80px', // Below the header
+            top: '80px',
             right: '20px',
             background: 'rgba(0, 0, 0, 0.7)',
             border: 'none',
@@ -367,9 +343,9 @@ const Hologram: React.FC = () => {
                 <img
                   src={selectedModel.src}
                   alt={`${position} Reflection`}
-                  className={isPlayingSudaAudio ? 'suda-glow-animation' : ''}
-                  onLoad={(e) => {
-                    if (selectedModel.name === 'Suda' && !isPlayingSudaAudio) {
+                  className={selectedModel.name === 'Suda' ? 'suda-glow-animation' : ''}
+                  onLoad={() => {
+                    if (selectedModel.name === 'Suda') {
                       setIsPlayingSudaAudio(true);
                     }
                   }}
@@ -381,7 +357,6 @@ const Hologram: React.FC = () => {
         </div>
       </IonContent>
 
-      {/* Music Player Section */}
       <div
         style={{
           position: 'fixed',
@@ -415,7 +390,6 @@ const Hologram: React.FC = () => {
         <Musics />
       </div>
 
-      {/* Show Music Player Button (when hidden) */}
       {!showMusicPlayer && (
         <button
           onClick={() => setShowMusicPlayer(true)}
