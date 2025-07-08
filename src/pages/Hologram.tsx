@@ -145,7 +145,7 @@ const Hologram: React.FC = () => {
         const started = await VoiceService.startListening(handleVoiceCommand);
         setIsVoiceActive(started);
         setMicEnabled(started);
-
+        
         if (started) {
           playHelloSound();
         }
@@ -235,6 +235,7 @@ const Hologram: React.FC = () => {
   useIonViewWillEnter(() => {
     document.activeElement instanceof HTMLElement && document.activeElement.blur();
 
+    // Only initialize the audio, don't play it automatically
     audioRef.current = new Audio(hello);
     audioRef.current.preload = 'auto';
 
