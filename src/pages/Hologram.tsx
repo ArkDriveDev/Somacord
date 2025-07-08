@@ -53,38 +53,41 @@ const Hologram: React.FC = () => {
   const modelChangeTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Audio refs
-  const clemSound = useRef<HTMLAudioElement | null>(null);
-  const successSound = useRef<HTMLAudioElement | null>(null);
+  const clemSound = useRef<HTMLAudioElement>(new Audio(clem));
+  const successSound = useRef<HTMLAudioElement>(new Audio(success));
   const [showMusicPlayer, setShowMusicPlayer] = useState(true);
 
-  // Automatically switch to Suda when responding and back when done
+  // Handle model switching when responding
   useEffect(() => {
     if (isResponding) {
-      setOriginalModel(selectedModel);
+      // Only update original model if current model isn't Suda
+      if (selectedModel.id !== SUDA_MODEL.id) {
+        setOriginalModel(selectedModel);
+      }
       setSelectedModel(SUDA_MODEL);
     } else {
-      setSelectedModel(originalModel);
+      // Only revert if currently showing Suda
+      if (selectedModel.id === SUDA_MODEL.id) {
+        setSelectedModel(originalModel);
+      }
     }
   }, [isResponding]);
 
+  // Initialize audio elements
   useEffect(() => {
-    const initializeAudio = () => {
-      try {
-        clemSound.current = new Audio();
-        clemSound.current.src = clem;
-        clemSound.current.preload = 'auto';
-        clemSound.current.load().catch(e => console.error("Failed to load clem audio:", e));
+    clemSound.current.preload = 'auto';
+    successSound.current.preload = 'auto';
 
-        successSound.current = new Audio();
-        successSound.current.src = success;
-        successSound.current.preload = 'auto';
-        successSound.current.load().catch(e => console.error("Failed to load success audio:", e));
-      } catch (error) {
-        console.error("Audio initialization error:", error);
-      }
-    };
-
-    initializeAudio();
+    try {
+      clemSound.current?.load();
+    } catch (e) {
+      console.error("Failed to load clem audio:", e);
+    }
+    try {
+      successSound.current?.load();
+    } catch (e) {
+      console.error("Failed to load success audio:", e);
+    }
 
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
@@ -103,9 +106,7 @@ const Hologram: React.FC = () => {
     return () => {
       observer.disconnect();
       clemSound.current?.pause();
-      clemSound.current = null;
       successSound.current?.pause();
-      successSound.current = null;
     };
   }, []);
 
@@ -260,10 +261,13 @@ const Hologram: React.FC = () => {
     document.activeElement instanceof HTMLElement && document.activeElement.blur();
 
     try {
-      audioRef.current = new Audio();
-      audioRef.current.src = hello;
+      audioRef.current = new Audio(hello);
       audioRef.current.preload = 'auto';
-      audioRef.current.load().catch(e => console.error("Failed to load hello audio:", e));
+      try {
+        audioRef.current?.load();
+      } catch (e) {
+        console.error("Failed to load hello audio:", e);
+      }
 
       if (audioRef.current) {
         audioRef.current.onended = () => {
