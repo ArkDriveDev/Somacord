@@ -271,41 +271,41 @@ const Hologram: React.FC = () => {
           </div>
         )}
       </IonContent>
-      {showMusicPlayer && (
-        <div
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '550px',
+          backgroundColor: '#1a1a1a',
+          zIndex: 1000,
+          transition: 'transform 0.3s ease-in-out',
+          transform: showMusicPlayer ? 'translateY(0)' : 'translateY(100%)',
+        }}
+      >
+        {/* Down icon on top-right */}
+        <button
+          onClick={() => setShowMusicPlayer(false)}
           style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '560px',
-            backgroundColor: '#1a1a1a',
-            zIndex: 1000,
+            position: 'absolute',
+            top: '8px',
+            right: '12px',
+            background: 'transparent',
+            border: 'none',
+            color: '#fff',
+            fontSize: '24px',
+            cursor: 'pointer',
+            zIndex: 1001,
           }}
+          title="Hide Music Player"
         >
-          {/* Down icon on top-right */}
-          <button
-            onClick={() => setShowMusicPlayer(false)}
-            style={{
-              position: 'absolute',
-              top: '8px',
-              right: '12px',
-              background: 'transparent',
-              border: 'none',
-              color: '#fff',
-              fontSize: '24px',
-              cursor: 'pointer',
-              zIndex: 1001,
-            }}
-            title="Hide Music Player"
-          >
-            <IonIcon icon={chevronDownOutline} />
-          </button>
+          <IonIcon icon={chevronDownOutline} />
+        </button>
 
-          {/* Music content */}
-          <Musics />
-        </div>
-      )}
+        {/* Music content */}
+        <Musics />
+      </div>
 
       {!showMusicPlayer && (
         <button
