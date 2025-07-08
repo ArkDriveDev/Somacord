@@ -282,6 +282,12 @@ const Hologram: React.FC = () => {
                   src={selectedModel.src}
                   alt={`${position} Reflection`}
                   className={isPlayingSudaAudio ? 'suda-glow-animation' : ''}
+                  onLoad={(e) => {
+                    // Only apply animation after image is loaded
+                    if (selectedModel.name === 'Suda' && !isPlayingSudaAudio) {
+                      setIsPlayingSudaAudio(true);
+                    }
+                  }}
                   onError={(e) => (e.currentTarget.src = DEFAULT_MODEL.src)}
                 />
               </div>
