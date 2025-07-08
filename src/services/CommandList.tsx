@@ -73,7 +73,7 @@ export const CommandList = async (command: string): Promise<{
   }
 
   // 2. Handle hello command
-  if (normalized.includes("suda")) {
+  if (normalized.includes("sudha")) {
     await playAudio('suda');
     return { action: 'hello' };
   }
