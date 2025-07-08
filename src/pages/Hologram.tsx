@@ -13,7 +13,7 @@ import CommandList from '../services/CommandList';
 import hello from '../Assets/Responses/Suda1.wav';
 import reverseImage from '../Assets/reverse.png';
 import clem from '../Assets/Responses/Clem.wav';
-import success from '../Assets/Responses/warframe-launcher-sound.wav';
+import success from '../Assets/Responses/Launch.wav';
 import { fetchAvailableModels } from '../services/ModelsService';
 import Musics from './Musics';
 import Suda from '../Assets/Suda/Suda.png';
@@ -36,6 +36,34 @@ const SUDA_MODEL: HologramModel = {
   src: Suda
 };
 
+// Audio cache
+const audioCache: Record<string, HTMLAudioElement> = {};
+
+// Preload audio files
+const preloadAudio = (name: string, url: string) => {
+  const audio = new Audio(url);
+  audio.preload = 'auto';
+  audio.volume = 0.8;
+  audioCache[name] = audio;
+};
+
+preloadAudio('hello', hello);
+preloadAudio('clem', clem);
+preloadAudio('success', success);
+
+const playAudio = async (name: string): Promise<void> => {
+  try {
+    const audio = audioCache[name].cloneNode(true) as HTMLAudioElement;
+    await audio.play();
+    await new Promise<void>((resolve) => {
+      audio.onended = () => resolve();
+      audio.onerror = () => resolve();
+    });
+  } catch (err) {
+    console.error(`Audio playback error (${name}):`, err);
+  }
+};
+
 const Hologram: React.FC = () => {
   const location = useLocation<{ model?: HologramModel }>();
   const [selectedModel, setSelectedModel] = useState<HologramModel>(DEFAULT_MODEL);
@@ -47,48 +75,50 @@ const Hologram: React.FC = () => {
   const [isModelChanging, setIsModelChanging] = useState(false);
   const [isPlayingSudaAudio, setIsPlayingSudaAudio] = useState(false);
   const [micEnabled, setMicEnabled] = useState(false);
+  const [isWindows, setIsWindows] = useState(false);
+  const [showMusicPlayer, setShowMusicPlayer] = useState(true);
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const responseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const modelChangeTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Audio refs
-  const clemSound = useRef<HTMLAudioElement>(new Audio(clem));
-  const successSound = useRef<HTMLAudioElement>(new Audio(success));
-  const [showMusicPlayer, setShowMusicPlayer] = useState(true);
+  // Check if running on Windows
+  useEffect(() => {
+    const userAgent = window.navigator.userAgent;
+    setIsWindows(userAgent.indexOf("Windows") !== -1);
+  }, []);
+
+  // Play success sound on Windows when component mounts
+  useEffect(() => {
+    if (isWindows) {
+      const playInitialSound = async () => {
+        try {
+          setIsResponding(true);
+          await playAudio('success');
+        } catch (e) {
+          console.error("Initial sound error:", e);
+        } finally {
+          setTimeout(() => setIsResponding(false), 2000);
+        }
+      };
+      playInitialSound();
+    }
+  }, [isWindows]);
 
   // Handle model switching when responding
   useEffect(() => {
     if (isResponding) {
-      // Only update original model if current model isn't Suda
       if (selectedModel.id !== SUDA_MODEL.id) {
         setOriginalModel(selectedModel);
       }
       setSelectedModel(SUDA_MODEL);
     } else {
-      // Only revert if currently showing Suda
       if (selectedModel.id === SUDA_MODEL.id) {
         setSelectedModel(originalModel);
       }
     }
-  }, [isResponding]);
+  }, [isResponding, selectedModel, originalModel]);
 
-  // Initialize audio elements
   useEffect(() => {
-    clemSound.current.preload = 'auto';
-    successSound.current.preload = 'auto';
-
-    try {
-      clemSound.current?.load();
-    } catch (e) {
-      console.error("Failed to load clem audio:", e);
-    }
-    try {
-      successSound.current?.load();
-    } catch (e) {
-      console.error("Failed to load success audio:", e);
-    }
-
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
@@ -105,8 +135,6 @@ const Hologram: React.FC = () => {
 
     return () => {
       observer.disconnect();
-      clemSound.current?.pause();
-      successSound.current?.pause();
     };
   }, []);
 
@@ -126,30 +154,25 @@ const Hologram: React.FC = () => {
     }
   }, [location.state]);
 
-  const playHelloSound = () => {
-    if (!audioRef.current) return;
-
-    VoiceService.setSystemAudioState(true);
-    setIsResponding(true);
-
-    audioRef.current.currentTime = 0;
-    audioRef.current.play().catch(e => console.error("Audio play error:", e));
-
-    const handleAudioEnd = () => {
-      VoiceService.setSystemAudioState(false);
+  const playHelloSound = async () => {
+    try {
+      setIsResponding(true);
+      setIsPlayingSudaAudio(true);
+      await playAudio('hello');
+    } catch (e) {
+      console.error("Hello sound error:", e);
+    } finally {
       setIsResponding(false);
       setIsPlayingSudaAudio(false);
-    };
-
-    audioRef.current.onended = handleAudioEnd;
-    audioRef.current.onerror = handleAudioEnd;
+    }
   };
 
-  const handleReverseClick = () => {
+  const handleReverseClick = async () => {
     setIsReversed(!isReversed);
-    if (clemSound.current) {
-      clemSound.current.currentTime = 0;
-      clemSound.current.play().catch(e => console.error("Failed to play clem audio:", e));
+    try {
+      await playAudio('clem');
+    } catch (e) {
+      console.error("Clem sound error:", e);
     }
   };
 
@@ -169,7 +192,7 @@ const Hologram: React.FC = () => {
         setMicEnabled(started);
 
         if (started) {
-          playHelloSound();
+          await playHelloSound();
         }
       } catch (error) {
         console.error("Voice init error:", error);
@@ -194,16 +217,7 @@ const Hologram: React.FC = () => {
         setSelectedModel(modelName);
         setOriginalModel(modelName);
         localStorage.setItem('selectedModel', JSON.stringify(modelName));
-        if (successSound.current) {
-          await new Promise<void>((resolve) => {
-            successSound.current!.currentTime = 0;
-            successSound.current!.onended = () => resolve();
-            successSound.current!.play().catch(e => {
-              console.error("Failed to play success audio:", e);
-              resolve();
-            });
-          });
-        }
+        await playAudio('success');
         return;
       }
 
@@ -218,16 +232,7 @@ const Hologram: React.FC = () => {
         setSelectedModel(model);
         setOriginalModel(model);
         localStorage.setItem('selectedModel', JSON.stringify(model));
-        if (successSound.current) {
-          await new Promise<void>((resolve) => {
-            successSound.current!.currentTime = 0;
-            successSound.current!.onended = () => resolve();
-            successSound.current!.play().catch(e => {
-              console.error("Failed to play success audio:", e);
-              resolve();
-            });
-          });
-        }
+        await playAudio('success');
       }
     } catch (error) {
       console.error("Model change error:", error);
@@ -259,29 +264,6 @@ const Hologram: React.FC = () => {
 
   useIonViewWillEnter(() => {
     document.activeElement instanceof HTMLElement && document.activeElement.blur();
-
-    try {
-      audioRef.current = new Audio(hello);
-      audioRef.current.preload = 'auto';
-      try {
-        audioRef.current?.load();
-      } catch (e) {
-        console.error("Failed to load hello audio:", e);
-      }
-
-      if (audioRef.current) {
-        audioRef.current.onended = () => {
-          setIsResponding(false);
-          setIsPlayingSudaAudio(false);
-        };
-        audioRef.current.onplay = () => {
-          setIsResponding(true);
-          setIsPlayingSudaAudio(true);
-        };
-      }
-    } catch (error) {
-      console.error("Audio initialization error in useIonViewWillEnter:", error);
-    }
   });
 
   useIonViewWillLeave(() => {
@@ -290,10 +272,6 @@ const Hologram: React.FC = () => {
     setIsResponding(false);
     setIsPlayingSudaAudio(false);
     setMicEnabled(false);
-
-    audioRef.current?.pause();
-    audioRef.current = null;
-
     clearTimeout(responseTimeoutRef.current as NodeJS.Timeout);
     clearTimeout(modelChangeTimeout.current as NodeJS.Timeout);
   });
