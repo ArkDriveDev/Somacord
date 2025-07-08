@@ -5,13 +5,13 @@ import {
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import './Hologram.css';
-import Orb1 from '../images/Orb1.gif';
+import Octavia from '../Assets/Warframes/Octavia.png';
 import VoiceService from '../services/VoiceService';
 import CommandList from '../services/CommandList';
-import hello from '../Responses/CuteResponse/hello1.ogg';
-import reverseImage from '../images/reverse.png';
-import wanya from '../Responses/CuteResponse/Wanya.mp3';
-import success from '../Responses/CuteResponse/Success.mp3';
+import hello from '../Assets/Responses/Suda1.wav';
+import reverseImage from '../Assets/reverse.png';
+import clem from '../Assets/Responses/Clem.mp3';
+import success from '../Assets/Responses/warframe-launcher-sound.mp3';
 import { fetchAvailableModels } from '../services/ModelsService';
 
 interface HologramModel {
@@ -22,8 +22,8 @@ interface HologramModel {
 
 const DEFAULT_MODEL: HologramModel = {
   id: 1,
-  name: 'Orb 1',
-  src: Orb1
+  name: 'Octavia',
+  src: Octavia
 };
 
 const Hologram: React.FC = () => {
@@ -40,13 +40,13 @@ const Hologram: React.FC = () => {
   const modelChangeTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Audio refs
-  const wanyaSound = useRef(new Audio(wanya)).current;
+  const clemSound = useRef(new Audio(clem)).current;
   const successSound = useRef(new Audio(success)).current;
 
 
   useEffect(() => {
     // Initialize audio elements
-    wanyaSound.load();
+   clemSound.load();
     successSound.load();
 
     // Set up aria-hidden observer
@@ -103,7 +103,7 @@ const Hologram: React.FC = () => {
 
   const handleReverseClick = () => {
     setIsReversed(!isReversed);
-    wanyaSound.play().catch(e => console.error("Failed to play audio:", e));
+   clemSound.play().catch(e => console.error("Failed to play audio:", e));
   };
 
   const handleModelChange = useCallback(async (modelName: string | HologramModel | null) => {

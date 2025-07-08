@@ -1,8 +1,8 @@
 // src/services/CommandList.ts
-import hai from '../Responses/CuteResponse/hai.ogg';
-import womp from '../Responses/CuteResponse/womp.ogg';
-import hi from '../Responses/CuteResponse/Hi.mp3';
-import pikmin from '../Responses/CuteResponse/Pikmin.mp3';
+import changemodel from '../Assets/Responses/Suda3.wav';
+import invalid from '../Assets/Responses/Suda6.wav';
+import suda from '../Assets/Responses/Suda2.wav';
+import failed from '../Assets/Responses/Suda5.wav';
 import { findModelByName, ImageData } from './ModelsService';
 import VoiceService from './VoiceService';
 
@@ -18,10 +18,10 @@ const preloadAudio = (sound: string, url: string) => {
 };
 
 // Initialize audio cache
-preloadAudio('hai', hai);
-preloadAudio('womp', womp);
-preloadAudio('hi', hi);
-preloadAudio('pikmin', pikmin);
+preloadAudio('suda', suda);
+preloadAudio('invalid', invalid);
+preloadAudio('changemodel', changemodel);
+preloadAudio('failed', failed);
 
 const playAudio = async (sound: string): Promise<void> => {
   try {
@@ -40,7 +40,7 @@ const playAudio = async (sound: string): Promise<void> => {
 };
 
 export const initiateModelChange = async (): Promise<string | null> => {
-  await playAudio('hi');
+  await playAudio('changemodel');
   return new Promise((resolve) => {
     VoiceService.startModelSelection(6000, (modelName) => {
       resolve(modelName || null);
@@ -55,11 +55,11 @@ export const CommandList = async (command: string): Promise<{
   const normalized = command.trim().toLowerCase();
 
   // 1. Handle model change command
-  if (normalized.includes("change")) {
+  if (normalized.includes("change warframe")) {
     const modelName = await initiateModelChange();
     
     if (!modelName) {
-      await playAudio('pikmin');
+      await playAudio('failed');
       return { action: 'timeout' };
     }
 
@@ -68,18 +68,18 @@ export const CommandList = async (command: string): Promise<{
       return { action: 'changeModel', model };
     }
 
-    await playAudio('pikmin');
+    await playAudio('failed');
     return { action: 'invalidModel' };
   }
 
   // 2. Handle hello command
-  if (normalized.includes("hello")) {
-    await playAudio('hai');
+  if (normalized.includes("suda")) {
+    await playAudio('suda');
     return { action: 'hello' };
   }
 
   // 3. Default unknown command
-  await playAudio('womp');
+  await playAudio('invalid');
   return { action: 'unknown' };
 };
 
