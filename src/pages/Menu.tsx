@@ -61,7 +61,7 @@ const Menu: React.FC = () => {
             <IonButtons slot="start">
               <IonMenuButton style={h1Style} />
             </IonButtons>
-            <IonTitle style={{ color: 'skyblue' }}>Ongacord</IonTitle>
+            <IonTitle style={{ color: 'skyblue' }}>Somacord</IonTitle>
           </IonToolbar>
         </IonHeader>
         

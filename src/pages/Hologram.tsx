@@ -1,6 +1,6 @@
 import {
   IonContent, IonPage, IonHeader, IonToolbar,
-  IonTitle, useIonViewWillEnter, useIonViewWillLeave, useIonViewDidEnter
+  IonTitle, useIonViewWillEnter, useIonViewWillLeave,IonTabBar
 } from '@ionic/react';
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -265,6 +265,9 @@ const Hologram: React.FC = () => {
           </div>
         )}
       </IonContent>
+       <IonTabBar slot="bottom" style={{ height: '310px' }}>
+       
+      </IonTabBar>
     </IonPage>
   );
 };
