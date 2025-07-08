@@ -1,0 +1,140 @@
+/* MAIN CONTAINER */
+.music-container {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  touch-action: pan-x;
+  padding: 20px 0;
+  cursor: grab;
+  position: relative;
+}
+
+.music-container.grabbing {
+  cursor: grabbing;
+}
+
+.music-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* ROW of Cards */
+.music-scroll-row {
+  display: flex;
+  gap: 16px;
+  padding: 0 calc(50vw - 40%); /* Creates center alignment */
+}
+
+/* Card Wrapper - Key Change Here */
+.music-col {
+  scroll-snap-align: center;
+  flex: 0 0 auto;
+  width: 80vw; /* Card takes up 80% of viewport width */
+}
+
+/* Music Card - Compact with glow effect */
+.music-card {
+  width: 100%;
+  height: 180px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #2d2d42, #1e1e2d);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+  transform: scale(0.95);
+}
+
+/* Centered Card - Glow Effect */
+.music-card.snap-center {
+  opacity: 1;
+  transform: scale(1);
+  box-shadow: 0 0 20px 5px rgba(0, 212, 255, 0.5);
+  border: 2px solid var(--ion-color-primary, #00d4ff);
+  z-index: 2;
+}
+
+/* Music image */
+.music-image {
+  width: 100%;
+  height: 60%;
+  object-fit: contain;
+  padding: 8px;
+}
+
+/* Card title */
+.music-card ion-card-header {
+  padding: 8px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+}
+
+.music-card ion-card-title {
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  width: 100%;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .music-col {
+    width: 60vw;
+  }
+  .music-scroll-row {
+    padding: 0 calc(50vw - 30%); /* Adjust for larger screens */
+  }
+}
+
+@media (min-width: 1024px) {
+  .music-col {
+    width: 40vw;
+  }
+  .music-scroll-row {
+    padding: 0 calc(50vw - 20%);
+  }
+}
+/* Music Player Card - Compact Version */
+.music-player-card {
+  max-width: 90%; /* Instead of full width */
+  margin: 0 auto; /* Center horizontally */
+  margin-top: 1%;
+  margin-bottom: 2%;
+  border-radius: 16px;
+  padding: 8px;
+  background: linear-gradient(145deg, #2d2d42, #1e1e2d);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Tighter Control Grouping */
+.player-controls {
+  display: flex;
+  justify-content: center;
+  gap: 4px; /* Reduced gap between buttons */
+  padding: 4px;
+}
+
+/* Bottom Row - More Compact */
+.player-bottom-row {
+  display: flex;
+  justify-content: center;
+  padding: 4px 8px; /* Less side padding */
+}
+
+/* Make buttons slightly smaller */
+.player-controls ion-button {
+  --padding-start: 6px;
+  --padding-end: 6px;
+}
