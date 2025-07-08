@@ -1,4 +1,4 @@
-/* Hologram.css - Complete Version */
+/* Hologram.css - Complete Version with All Styles */
 /* Solid Black Background */
 ion-content.hologram-container {
   --background: #000000;
@@ -214,26 +214,93 @@ ion-content.hologram-container {
     }
   }
 }
+
 /* Mic Toggle Button */
 .mic-toggle-button {
   position: fixed;
   top: 80px;
   right: 20px;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.7);
   border: none;
   color: #ccc;
   font-size: 1.5rem;
-  z-index: 100;
+  z-index: 1000;
   cursor: pointer;
-  padding: 8px;
+  padding: 10px;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
 .mic-toggle-button.active {
   color: #4CAF50;
+}
+
+/* Music Player Styles */
+.music-player-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 550px;
+  background-color: #1a1a1a;
+  z-index: 1000;
+  transition: transform 0.3s ease-in-out;
+}
+
+.music-player-container.hidden {
+  transform: translateY(100%);
+}
+
+.music-player-close-button {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.music-player-toggle-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(0,0,0,0.6);
+}
+
+.music-player-toggle-button .icon {
+  transform: rotate(180deg);
+}
+
+/* Suda Glow Animation */
+.suda-glow-animation {
+  animation: sudaGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes sudaGlow {
+  0% {
+    filter: brightness(1) drop-shadow(0 0 5px rgba(100, 200, 255, 0.5));
+  }
+  100% {
+    filter: brightness(1.3) drop-shadow(0 0 20px rgba(100, 220, 255, 0.8));
+  }
 }

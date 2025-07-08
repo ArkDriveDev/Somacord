@@ -287,84 +287,17 @@ const Hologram: React.FC = () => {
       <IonContent fullscreen className="hologram-container">
         <button
           onClick={toggleMic}
-          style={{
-            position: 'fixed',
-            top: '80px',
-            right: '20px',
-            background: 'rgba(0, 0, 0, 0.7)',
-            border: 'none',
-            color: micEnabled ? '#4CAF50' : '#ccc',
-            fontSize: '1.5rem',
-            zIndex: 1000,
-            cursor: 'pointer',
-            padding: '10px',
-            borderRadius: '50%',
-            width: '44px',
-            height: '44px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 10px rgba(0,0,0,0.5)'
-          }}
+          className={`mic-toggle-button ${micEnabled ? 'active' : ''}`}
           title={micEnabled ? "Turn off microphone" : "Turn on microphone"}
         >
           <IonIcon icon={micEnabled ? micOutline : micOffOutline} />
         </button>
-
-        <div className={`hologram-center ${isResponding ? 'pulse-effect' : ''}`}>
-          <img
-            src={reverseImage}
-            alt="Reverse Hologram"
-            className="center-image"
-            onClick={handleReverseClick}
-            onError={(e) => console.error("Failed to load center image")}
-          />
-          <div className={`reflection-base ${isReversed ? 'reversed' : ''}`}>
-            {['top', 'right', 'bottom', 'left'].map((position) => (
-              <div key={position} className={`reflection-image ${position}`}>
-                <img
-                  src={selectedModel.src}
-                  alt={`${position} Reflection`}
-                  className={selectedModel.name === 'Suda' ? 'suda-glow-animation' : ''}
-                  onLoad={() => {
-                    if (selectedModel.name === 'Suda') {
-                      setIsPlayingSudaAudio(true);
-                    }
-                  }}
-                  onError={(e) => (e.currentTarget.src = DEFAULT_MODEL.src)}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
       </IonContent>
 
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '550px',
-          backgroundColor: '#1a1a1a',
-          zIndex: 1000,
-          transition: 'transform 0.3s ease-in-out',
-          transform: showMusicPlayer ? 'translateY(0)' : 'translateY(100%)',
-        }}
-      >
+      <div className={`music-player-container ${showMusicPlayer ? '' : 'hidden'}`}>
         <button
           onClick={() => setShowMusicPlayer(false)}
-          style={{
-            position: 'absolute',
-            top: '8px',
-            right: '12px',
-            background: 'transparent',
-            border: 'none',
-            color: '#fff',
-            fontSize: '24px',
-            cursor: 'pointer',
-            zIndex: 1001,
-          }}
+          className="music-player-close-button"
           title="Hide Music Player"
         >
           <IonIcon icon={chevronDownOutline} />
@@ -372,30 +305,14 @@ const Hologram: React.FC = () => {
         <Musics />
       </div>
 
+      {/* Music Player Toggle Button (when hidden) */}
       {!showMusicPlayer && (
         <button
           onClick={() => setShowMusicPlayer(true)}
-          style={{
-            position: 'fixed',
-            bottom: '20px',
-            right: '20px',
-            backgroundColor: '#1a1a1a',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '50%',
-            width: '50px',
-            height: '50px',
-            fontSize: '24px',
-            cursor: 'pointer',
-            zIndex: 1001,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 10px rgba(0,0,0,0.6)'
-          }}
+          className="music-player-toggle-button"
           title="Show Music Player"
         >
-          <IonIcon icon={chevronDownOutline} style={{ transform: 'rotate(180deg)' }} />
+          <IonIcon icon={chevronDownOutline} className="icon" />
         </button>
       )}
     </IonPage>
