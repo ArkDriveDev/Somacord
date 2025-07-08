@@ -292,12 +292,41 @@ const Hologram: React.FC = () => {
         >
           <IonIcon icon={micEnabled ? micOutline : micOffOutline} />
         </button>
+
+        <div className={`hologram-center ${isResponding ? 'pulse-effect' : ''}`}>
+          <img
+            src={reverseImage}
+            alt="Reverse Hologram"
+            className="center-image"
+            onClick={handleReverseClick}
+            onError={(e) => console.error("Failed to load center image")}
+          />
+          <div className={`reflection-base ${isReversed ? 'reversed' : ''}`}>
+            {['top', 'right', 'bottom', 'left'].map((position) => (
+              <div key={position} className={`reflection-image ${position}`}>
+                <img
+                  src={selectedModel.src}
+                  alt={`${position} Reflection`}
+                  className={selectedModel.name === 'Suda' ? 'suda-glow-animation' : ''}
+                  onLoad={() => {
+                    if (selectedModel.name === 'Suda') {
+                      setIsPlayingSudaAudio(true);
+                    }
+                  }}
+                  onError={(e) => (e.currentTarget.src = DEFAULT_MODEL.src)}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       </IonContent>
 
-      <div className={`music-player-container ${showMusicPlayer ? '' : 'hidden'}`}>
+      <div
+        className={`music-player-container ${showMusicPlayer ? 'music-player-visible' : 'music-player-hidden'}`}
+      >
         <button
           onClick={() => setShowMusicPlayer(false)}
-          className="music-player-close-button"
+          className="music-player-toggle-close"
           title="Hide Music Player"
         >
           <IonIcon icon={chevronDownOutline} />
@@ -305,18 +334,18 @@ const Hologram: React.FC = () => {
         <Musics />
       </div>
 
-      {/* Music Player Toggle Button (when hidden) */}
       {!showMusicPlayer && (
         <button
           onClick={() => setShowMusicPlayer(true)}
-          className="music-player-toggle-button"
+          className="music-player-toggle-open"
           title="Show Music Player"
         >
-          <IonIcon icon={chevronDownOutline} className="icon" />
+          <IonIcon icon={chevronDownOutline} style={{ transform: 'rotate(180deg)' }} />
         </button>
       )}
     </IonPage>
   );
+
 };
 
 export default Hologram;
