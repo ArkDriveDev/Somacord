@@ -170,16 +170,16 @@ ion-content.hologram-container {
   }
   
   .reflection-image.top {
-    top: 12%;
+    top: 6%;
   }
   .reflection-image.right {
-    right: 12%;
+    right: 6%;
   }
   .reflection-image.bottom {
-    bottom: 12%;
+    bottom: 6%;
   }
   .reflection-image.left {
-    left: 12%;
+    left: 6%;
   }
 
   .center-image {
