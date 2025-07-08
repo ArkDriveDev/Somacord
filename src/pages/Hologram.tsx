@@ -98,8 +98,9 @@ const Hologram: React.FC = () => {
 
     VoiceService.setSystemAudioState(true);
     setIsResponding(true);
-    setIsPlayingSudaAudio(true); // Set flag when Suda audio starts playing
-    setSelectedModel(SUDA_MODEL); // Switch to Suda image
+
+    // Change the model to Suda - the onLoad handler will trigger the animation
+    setSelectedModel(SUDA_MODEL);
 
     audioRef.current.currentTime = 0;
     audioRef.current.play().catch(e => console.error("Audio play error:", e));
@@ -107,8 +108,9 @@ const Hologram: React.FC = () => {
     const handleAudioEnd = () => {
       VoiceService.setSystemAudioState(false);
       setIsResponding(false);
-      setIsPlayingSudaAudio(false); // Reset flag when audio ends
-      // Restore previous model if needed
+      setIsPlayingSudaAudio(false);
+
+      // Change back to the previous model
       const saved = localStorage.getItem('selectedModel');
       if (saved) {
         setSelectedModel(JSON.parse(saved));
@@ -120,7 +122,7 @@ const Hologram: React.FC = () => {
     audioRef.current.onended = handleAudioEnd;
     audioRef.current.onerror = handleAudioEnd;
   };
-
+  
   const handleReverseClick = () => {
     setIsReversed(!isReversed);
     clemSound.play().catch(e => console.error("Failed to play audio:", e));
