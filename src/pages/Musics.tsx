@@ -44,54 +44,54 @@ const Musics: React.FC = () => {
   // Original music items
   const musicItems = [
     { id: 1, title: 'Pick a Side', audioSrc: PickASide },
-  { id: 2, title: 'Arsenal', audioSrc: Arsenal },
-  { id: 3, title: 'Core Containment', audioSrc: CoreContainment },
-  { id: 4, title: 'Cut Through', audioSrc: CutThrough },
-  { id: 5, title: 'From The Stars', audioSrc: FromTheStars },
-  { id: 6, title: 'Lamenting The Days', audioSrc: LamentingTheDays },
-  { id: 7, title: 'Infection', audioSrc: Infection },
-  { id: 8, title: 'Numb', audioSrc: Numb },
-  { id: 9, title: 'Party Of Your Lifetime', audioSrc: PartyOfYourLifetime },
-  { id: 10, title: 'Rotten Lives', audioSrc: RottenLives },
-  { id: 11, title: 'See It In The Flesh', audioSrc: SeeItInTheFlesh },
-  { id: 12, title: 'The Call', audioSrc: TheCall },
-  { id: 13, title: 'Shut It Down', audioSrc: ShutItDown },
-  { id: 14, title: 'The Great Despair', audioSrc: TheGreatDespair },
+    { id: 2, title: 'Arsenal', audioSrc: Arsenal },
+    { id: 3, title: 'Core Containment', audioSrc: CoreContainment },
+    { id: 4, title: 'Cut Through', audioSrc: CutThrough },
+    { id: 5, title: 'From The Stars', audioSrc: FromTheStars },
+    { id: 6, title: 'Lamenting The Days', audioSrc: LamentingTheDays },
+    { id: 7, title: 'Infection', audioSrc: Infection },
+    { id: 8, title: 'Numb', audioSrc: Numb },
+    { id: 9, title: 'Party Of Your Lifetime', audioSrc: PartyOfYourLifetime },
+    { id: 10, title: 'Rotten Lives', audioSrc: RottenLives },
+    { id: 11, title: 'See It In The Flesh', audioSrc: SeeItInTheFlesh },
+    { id: 12, title: 'The Call', audioSrc: TheCall },
+    { id: 13, title: 'Shut It Down', audioSrc: ShutItDown },
+    { id: 14, title: 'The Great Despair', audioSrc: TheGreatDespair },
   ];
 
   // Initialize audio refs for all 14 music tracks
-const audioRef1 = useRef<HTMLAudioElement>(null);
-const audioRef2 = useRef<HTMLAudioElement>(null);
-const audioRef3 = useRef<HTMLAudioElement>(null);
-const audioRef4 = useRef<HTMLAudioElement>(null);
-const audioRef5 = useRef<HTMLAudioElement>(null);
-const audioRef6 = useRef<HTMLAudioElement>(null);
-const audioRef7 = useRef<HTMLAudioElement>(null);
-const audioRef8 = useRef<HTMLAudioElement>(null);
-const audioRef9 = useRef<HTMLAudioElement>(null);
-const audioRef10 = useRef<HTMLAudioElement>(null);
-const audioRef11 = useRef<HTMLAudioElement>(null);
-const audioRef12 = useRef<HTMLAudioElement>(null);
-const audioRef13 = useRef<HTMLAudioElement>(null);
-const audioRef14 = useRef<HTMLAudioElement>(null);
+  const audioRef1 = useRef<HTMLAudioElement>(null);
+  const audioRef2 = useRef<HTMLAudioElement>(null);
+  const audioRef3 = useRef<HTMLAudioElement>(null);
+  const audioRef4 = useRef<HTMLAudioElement>(null);
+  const audioRef5 = useRef<HTMLAudioElement>(null);
+  const audioRef6 = useRef<HTMLAudioElement>(null);
+  const audioRef7 = useRef<HTMLAudioElement>(null);
+  const audioRef8 = useRef<HTMLAudioElement>(null);
+  const audioRef9 = useRef<HTMLAudioElement>(null);
+  const audioRef10 = useRef<HTMLAudioElement>(null);
+  const audioRef11 = useRef<HTMLAudioElement>(null);
+  const audioRef12 = useRef<HTMLAudioElement>(null);
+  const audioRef13 = useRef<HTMLAudioElement>(null);
+  const audioRef14 = useRef<HTMLAudioElement>(null);
 
-// Map audio refs by track ID (1-14)
-const audioRefs = {
-  1: audioRef1,
-  2: audioRef2,
-  3: audioRef3,
-  4: audioRef4,
-  5: audioRef5,
-  6: audioRef6,
-  7: audioRef7,
-  8: audioRef8,
-  9: audioRef9,
-  10: audioRef10,
-  11: audioRef11,
-  12: audioRef12,
-  13: audioRef13,
-  14: audioRef14,
-};
+  // Map audio refs by track ID (1-14)
+  const audioRefs = {
+    1: audioRef1,
+    2: audioRef2,
+    3: audioRef3,
+    4: audioRef4,
+    5: audioRef5,
+    6: audioRef6,
+    7: audioRef7,
+    8: audioRef8,
+    9: audioRef9,
+    10: audioRef10,
+    11: audioRef11,
+    12: audioRef12,
+    13: audioRef13,
+    14: audioRef14,
+  };
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [centeredCard, setCenteredCard] = useState<number | null>(1);
@@ -133,39 +133,39 @@ const audioRefs = {
   }, [currentPlayingId]);
 
   // Handle play/pause
- const handlePlayPause = async (id: number) => {
-  const audioRef = audioRefs[id as keyof typeof audioRefs].current;
-  if (!audioRef) return;
+  const handlePlayPause = async (id: number) => {
+    const audioRef = audioRefs[id as keyof typeof audioRefs].current;
+    if (!audioRef) return;
 
-  try {
-    if (currentPlayingId === id) {
-      if (isPlaying) {
-        await audioRef.pause();
-      } else {
-        await audioRef.play();
-      }
-      setIsPlaying(!isPlaying);
-    } else {
-      // Pause currently playing audio if any
-      if (currentPlayingId) {
-        const currentAudio = audioRefs[currentPlayingId as keyof typeof audioRefs].current;
-        if (currentAudio) {
-          await currentAudio.pause();
-          currentAudio.currentTime = 0; // Reset position if switching tracks
+    try {
+      if (currentPlayingId === id) {
+        if (isPlaying) {
+          await audioRef.pause();
+        } else {
+          await audioRef.play();
         }
+        setIsPlaying(!isPlaying);
+      } else {
+        // Pause currently playing audio if any
+        if (currentPlayingId) {
+          const currentAudio = audioRefs[currentPlayingId as keyof typeof audioRefs].current;
+          if (currentAudio) {
+            await currentAudio.pause();
+            currentAudio.currentTime = 0; // Reset position if switching tracks
+          }
+        }
+
+        // Play new audio
+        audioRef.currentTime = 0;
+        await audioRef.play();
+        setCurrentPlayingId(id);
+        setIsPlaying(true);
       }
-      
-      // Play new audio
-      audioRef.currentTime = 0;
-      await audioRef.play();
-      setCurrentPlayingId(id);
-      setIsPlaying(true);
+    } catch (error) {
+      console.error("Playback failed:", error);
+      setIsPlaying(false);
     }
-  } catch (error) {
-    console.error("Playback failed:", error);
-    setIsPlaying(false);
-  }
-};
+  };
 
   // Handle audio ending
   useEffect(() => {
@@ -385,107 +385,107 @@ const audioRefs = {
   };
 
   return (
-      <IonContent fullscreen>
-        <ModelSearch onSearch={handleSearch} />
+    <IonContent fullscreen>
+      <ModelSearch onSearch={handleSearch} />
 
-        <div
-          className={`music-container ${isDragging ? 'grabbing' : ''}`}
-          ref={containerRef}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleMouseUp}
-        >
-          <div className="music-scroll-row">
-            <div style={{ minWidth: 'calc(50vw - 40%)' }} />
+      <div
+        className={`music-container ${isDragging ? 'grabbing' : ''}`}
+        ref={containerRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleMouseUp}
+      >
+        <div className="music-scroll-row">
+          <div style={{ minWidth: 'calc(50vw - 40%)' }} />
 
-            {filteredMusicItems.map((item) => (
-              <div
-                key={item.id}
-                className="music-col"
-                onClick={() => handleCardClick(item.id)}
-                style={{ cursor: 'pointer' }}
+          {filteredMusicItems.map((item) => (
+            <div
+              key={item.id}
+              className="music-col"
+              onClick={() => handleCardClick(item.id)}
+              style={{ cursor: 'pointer' }}
+            >
+              <IonCard
+                className={`music-card ${centeredCard === item.id ? 'snap-center' : ''}`}
+                data-id={item.id}
               >
-                <IonCard
-                  className={`music-card ${centeredCard === item.id ? 'snap-center' : ''}`}
-                  data-id={item.id}
-                >
-                  <img
-                    src={MusicImage}
-                    className="music-image"
-                    alt={item.title}
-                  />
-                  <IonCardHeader>
-                    <IonCardTitle>{item.title}</IonCardTitle>
-                  </IonCardHeader>
-                  <audio
-                    ref={audioRefs[item.id as keyof typeof audioRefs]}
-                    src={item.audioSrc}
-                    preload="none"
-                  />
-                </IonCard>
-              </div>
-            ))}
+                <img
+                  src={MusicImage}
+                  className="music-image"
+                  alt={item.title}
+                />
+                <IonCardHeader>
+                  <IonCardTitle>{item.title}</IonCardTitle>
+                </IonCardHeader>
+                <audio
+                  ref={audioRefs[item.id as keyof typeof audioRefs]}
+                  src={item.audioSrc}
+                  preload="none"
+                />
+              </IonCard>
+            </div>
+          ))}
 
-            <div style={{ minWidth: 'calc(50vw - 40%)' }} />
-          </div>
+          <div style={{ minWidth: 'calc(50vw - 40%)' }} />
         </div>
+      </div>
 
-        {/* Player Card */}
-        <IonCard className="music-player-card">
-          <div className="ion-padding">
-            <SpectrumBars
-              barCount={30}
-              isPlaying={isPlaying}
-              audioElement={
-                currentPlayingId ?
-                  audioRefs[currentPlayingId as keyof typeof audioRefs].current :
-                  null
+      {/* Player Card */}
+      <IonCard className="music-player-card">
+        <div className="ion-padding">
+          <SpectrumBars
+            barCount={30}
+            isPlaying={isPlaying}
+            audioElement={
+              currentPlayingId ?
+                audioRefs[currentPlayingId as keyof typeof audioRefs].current :
+                null
+            }
+          />
+          <MusicSpectrum
+            progress={currentProgress}
+            onSeek={(newProgress) => {
+              const audio = currentPlayingId ? audioRefs[currentPlayingId as keyof typeof audioRefs].current : null;
+              if (audio) {
+                audio.currentTime = (newProgress / 100) * audio.duration;
               }
-            />
-            <MusicSpectrum
-              progress={currentProgress}
-              onSeek={(newProgress) => {
-                const audio = currentPlayingId ? audioRefs[currentPlayingId as keyof typeof audioRefs].current : null;
-                if (audio) {
-                  audio.currentTime = (newProgress / 100) * audio.duration;
-                }
-              }}
+            }}
+            disabled={!currentPlayingId}
+          />
+          <div className="player-controls">
+            <MusicRestartButton
+              onRestart={handleRestart}
               disabled={!currentPlayingId}
             />
-            <div className="player-controls">
-              <MusicPrevious
-                onClick={handlePrevious}
-                disabled={!currentPlayingId || !centeredCard || filteredMusicItems.findIndex(item => item.id === centeredCard) <= 0}
-              />
-              <MusicRestartButton
-                onRestart={handleRestart}
-                disabled={!currentPlayingId}
-              />
-              <MusicPlayButton
-                isPlaying={currentPlayingId !== null && isPlaying}
-                onPlayPause={() => centeredCard && handlePlayPause(centeredCard)}
-                disabled={!centeredCard}
-              />
-              <MusicNext
-                onClick={handleNext}
-                disabled={
-                  !currentPlayingId ||
-                  !centeredCard ||
-                  filteredMusicItems.findIndex(item => item.id === centeredCard) >= filteredMusicItems.length - 1
-                }
-              />
-              <MusicRepeatToggle
-                isRepeat={isRepeat}
-                onToggle={() => setIsRepeat(!isRepeat)}
-              />
-            </div>
+            <MusicPrevious
+              onClick={handlePrevious}
+              disabled={!currentPlayingId || !centeredCard || filteredMusicItems.findIndex(item => item.id === centeredCard) <= 0}
+            />
+            <MusicPlayButton
+              isPlaying={currentPlayingId !== null && isPlaying}
+              onPlayPause={() => centeredCard && handlePlayPause(centeredCard)}
+              disabled={!centeredCard}
+            />
+            <MusicNext
+              onClick={handleNext}
+              disabled={
+                !currentPlayingId ||
+                !centeredCard ||
+                filteredMusicItems.findIndex(item => item.id === centeredCard) >= filteredMusicItems.length - 1
+              }
+            />
+            <MusicRepeatToggle
+              isRepeat={isRepeat}
+              onToggle={() => setIsRepeat(!isRepeat)}
+            />
           </div>
-        </IonCard>
-      </IonContent>
+        </div>
+      </IonCard>
+    </IonContent>
   );
 };
 
