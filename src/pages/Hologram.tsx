@@ -5,7 +5,7 @@ import {
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { IonIcon } from '@ionic/react';
-import { chevronDownOutline } from 'ionicons/icons';
+import { chevronDownOutline, micOutline, micOffOutline } from 'ionicons/icons';
 import './Hologram.css';
 import Octavia from '../Assets/Warframes/Octavia.png';
 import VoiceService from '../services/VoiceService';
@@ -45,6 +45,7 @@ const Hologram: React.FC = () => {
   const [isReversed, setIsReversed] = useState(false);
   const [isModelChanging, setIsModelChanging] = useState(false);
   const [isPlayingSudaAudio, setIsPlayingSudaAudio] = useState(false);
+  const [micEnabled, setMicEnabled] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const responseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -122,10 +123,39 @@ const Hologram: React.FC = () => {
     audioRef.current.onended = handleAudioEnd;
     audioRef.current.onerror = handleAudioEnd;
   };
-  
+
   const handleReverseClick = () => {
     setIsReversed(!isReversed);
     clemSound.play().catch(e => console.error("Failed to play audio:", e));
+  };
+
+  const toggleMic = async () => {
+    if (micEnabled) {
+      // Turn off mic
+      VoiceService.stopListening();
+      setIsVoiceActive(false);
+      setMicEnabled(false);
+    } else {
+      // Turn on mic
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+        setPermissionGranted(true);
+
+        const started = await VoiceService.startListening(handleVoiceCommand);
+        setIsVoiceActive(started);
+        setMicEnabled(started);
+
+        if (started) {
+          playHelloSound();
+        }
+      } catch (error) {
+        console.error("Voice init error:", error);
+        setPermissionGranted(false);
+        setIsVoiceActive(false);
+        setMicEnabled(false);
+      }
+    }
   };
 
   const handleModelChange = useCallback(async (modelName: string | HologramModel | null) => {
@@ -208,23 +238,6 @@ const Hologram: React.FC = () => {
     audioRef.current = new Audio(hello);
     audioRef.current.preload = 'auto';
 
-    const initialize = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(track => track.stop());
-        setPermissionGranted(true);
-
-        const started = await VoiceService.startListening(handleVoiceCommand);
-        setIsVoiceActive(started);
-        started && playHelloSound();
-      } catch (error) {
-        console.error("Voice init error:", error);
-        setPermissionGranted(false);
-        setIsVoiceActive(false);
-      }
-    };
-    initialize();
-
     if (audioRef.current) {
       audioRef.current.onended = () => {
         setIsResponding(false);
@@ -242,6 +255,7 @@ const Hologram: React.FC = () => {
     setIsVoiceActive(false);
     setIsResponding(false);
     setIsPlayingSudaAudio(false);
+    setMicEnabled(false);
 
     audioRef.current?.pause();
     audioRef.current = null;
@@ -258,17 +272,37 @@ const Hologram: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonTitle>{selectedModel.name}</IonTitle>
-          <div slot="end" style={{
-            color: isVoiceActive ? '#4CAF50' : '#ccc',
-            padding: '0 16px',
-            fontSize: '0.8rem'
-          }}>
-            {isVoiceActive ? 'Active' : 'Off'}
-          </div>
         </IonToolbar>
       </IonHeader>
 
       <IonContent fullscreen className="hologram-container">
+        {/* Mic Toggle Button - Fixed position in top right */}
+        <button
+          onClick={toggleMic}
+          style={{
+            position: 'fixed',
+            top: '80px', // Below the header
+            right: '20px',
+            background: 'rgba(0, 0, 0, 0.7)',
+            border: 'none',
+            color: micEnabled ? '#4CAF50' : '#ccc',
+            fontSize: '1.5rem',
+            zIndex: 1000,
+            cursor: 'pointer',
+            padding: '10px',
+            borderRadius: '50%',
+            width: '44px',
+            height: '44px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 0 10px rgba(0,0,0,0.5)'
+          }}
+          title={micEnabled ? "Turn off microphone" : "Turn on microphone"}
+        >
+          <IonIcon icon={micEnabled ? micOutline : micOffOutline} />
+        </button>
+
         <div className={`hologram-center ${isResponding ? 'pulse-effect' : ''}`}>
           <img
             src={reverseImage}
@@ -285,7 +319,6 @@ const Hologram: React.FC = () => {
                   alt={`${position} Reflection`}
                   className={isPlayingSudaAudio ? 'suda-glow-animation' : ''}
                   onLoad={(e) => {
-                    // Only apply animation after image is loaded
                     if (selectedModel.name === 'Suda' && !isPlayingSudaAudio) {
                       setIsPlayingSudaAudio(true);
                     }
@@ -296,13 +329,9 @@ const Hologram: React.FC = () => {
             ))}
           </div>
         </div>
-
-        {!permissionGranted && (
-          <div className="permission-warning">
-            Microphone access required for voice commands
-          </div>
-        )}
       </IonContent>
+
+      {/* Music Player Section */}
       <div
         style={{
           position: 'fixed',
@@ -333,10 +362,10 @@ const Hologram: React.FC = () => {
         >
           <IonIcon icon={chevronDownOutline} />
         </button>
-
         <Musics />
       </div>
 
+      {/* Show Music Player Button (when hidden) */}
       {!showMusicPlayer && (
         <button
           onClick={() => setShowMusicPlayer(true)}
