@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
+  IonContent,
   IonCard, IonCardHeader, IonCardTitle
 } from '@ionic/react';
 import './Musics.css';
@@ -22,7 +22,7 @@ import ShutItDown from '../Assets/Musics/Shut It Down.mp3';
 import TheGreatDespair from '../Assets/Musics/The Great Despair.mp3';
 
 // Images
-import MusicImage from '../images/Music.png';
+import MusicImage from '../Assets/Music.jpg';
 
 // Components
 import ModelSearch from '../components/ModelsProps/ModelSearch';

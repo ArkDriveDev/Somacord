@@ -1,6 +1,6 @@
 import {
   IonContent, IonPage, IonHeader, IonToolbar,
-  IonTitle, useIonViewWillEnter, useIonViewWillLeave,IonTabBar
+  IonTitle, useIonViewWillEnter, useIonViewWillLeave, IonTabBar, IonTabButton
 } from '@ionic/react';
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -13,6 +13,7 @@ import reverseImage from '../Assets/reverse.png';
 import clem from '../Assets/Responses/Clem.mp3';
 import success from '../Assets/Responses/warframe-launcher-sound.mp3';
 import { fetchAvailableModels } from '../services/ModelsService';
+import Musics from './Musics';
 
 interface HologramModel {
   id: number;
@@ -46,7 +47,7 @@ const Hologram: React.FC = () => {
 
   useEffect(() => {
     // Initialize audio elements
-   clemSound.load();
+    clemSound.load();
     successSound.load();
 
     // Set up aria-hidden observer
@@ -103,7 +104,7 @@ const Hologram: React.FC = () => {
 
   const handleReverseClick = () => {
     setIsReversed(!isReversed);
-   clemSound.play().catch(e => console.error("Failed to play audio:", e));
+    clemSound.play().catch(e => console.error("Failed to play audio:", e));
   };
 
   const handleModelChange = useCallback(async (modelName: string | HologramModel | null) => {
@@ -265,9 +266,23 @@ const Hologram: React.FC = () => {
           </div>
         )}
       </IonContent>
-       <IonTabBar slot="bottom" style={{ height: '310px' }}>
-       
-      </IonTabBar>
+      <IonPage>
+        {/* Fixed bottom music player */}
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '310px',
+            backgroundColor: '#1a1a1a',
+            zIndex: 1000,
+          }}
+        >
+          <Musics />
+        </div>
+      </IonPage>
+
     </IonPage>
   );
 };
