@@ -21,7 +21,7 @@ ion-content.hologram-container {
   height: 140vmin;
   max-width: 580px;
   max-height: 580px;
-  margin: 12vh auto 0;
+  margin: 25vh auto 0;
   transform: translateY(-10%);
 }
 
@@ -38,8 +38,8 @@ ion-content.hologram-container {
 /* Image Containers */
 .reflection-image {
   position: absolute;
-  width: 20%;
-  height: 20%;
+  width: 30%;
+  height: 30%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -57,26 +57,26 @@ ion-content.hologram-container {
 
 /* Positioning */
 .reflection-image.top {
-  top: 10%;
+  top: 5%;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .reflection-image.right {
   top: 50%;
-  right: 10%;
+  right: 5%;
   transform: translateY(-50%) rotate(90deg) scaleX(-1);
 }
 
 .reflection-image.bottom {
-  bottom: 10%;
+  bottom: 5%;
   left: 50%;
   transform: translateX(-50%) scaleY(-1);
 }
 
 .reflection-image.left {
   top: 50%;
-  left: 10%;
+  left: 5%;
   transform: translateY(-50%) rotate(270deg);
 }
 
@@ -173,7 +173,7 @@ ion-content.hologram-container {
     top: 12%;
   }
   .reflection-image.right {
-    right: 11%;
+    right: 12%;
   }
   .reflection-image.bottom {
     bottom: 12%;
