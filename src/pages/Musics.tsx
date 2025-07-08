@@ -159,10 +159,11 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
 
     // Handle play/pause
     const handlePlayPause = async (id: number) => {
-      // If mic is active, invoke play request callback
+      // If mic is active, request it to be turned off first
       if (isMicActive) {
         onPlayRequest?.();
-        return;
+        // Wait a brief moment for the mic to turn off
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
 
       const audioRef = audioRefs[id as keyof typeof audioRefs].current;
@@ -201,6 +202,7 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
         onPlayStateChange?.(false);
       }
     };
+
 
     // Handle audio ending
     useEffect(() => {
@@ -507,7 +509,7 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
               <MusicPlayButton
                 isPlaying={currentPlayingId !== null && isPlaying}
                 onPlayPause={() => centeredCard && handlePlayPause(centeredCard)}
-                disabled={!centeredCard || isMicActive}
+                disabled={!centeredCard}  // Only disabled if no track is selected
               />
               <MusicNext
                 onClick={handleNext}
