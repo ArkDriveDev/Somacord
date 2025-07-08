@@ -278,7 +278,7 @@ const Hologram: React.FC = () => {
             bottom: 0,
             left: 0,
             right: 0,
-            height: '310px',
+            height: '560px',
             backgroundColor: '#1a1a1a',
             zIndex: 1000,
           }}
@@ -305,6 +305,33 @@ const Hologram: React.FC = () => {
           {/* Music content */}
           <Musics />
         </div>
+      )}
+
+      {!showMusicPlayer && (
+        <button
+          onClick={() => setShowMusicPlayer(true)}
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            backgroundColor: '#1a1a1a',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '50%',
+            width: '50px',
+            height: '50px',
+            fontSize: '24px',
+            cursor: 'pointer',
+            zIndex: 1001,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 0 10px rgba(0,0,0,0.6)'
+          }}
+          title="Show Music Player"
+        >
+          <IonIcon icon={chevronDownOutline} style={{ transform: 'rotate(180deg)' }} />
+        </button>
       )}
 
     </IonPage>
