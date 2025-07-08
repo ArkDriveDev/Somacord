@@ -6,10 +6,20 @@ import {
 import './Musics.css';
 
 // Audio files
-import Music1 from '../Musics/Bumble bee.mp3';
-import Music2 from '../Musics/Chicken Dance.mp3';
-import Music3 from '../Musics/Pretty little baby.mp3';
-import Music4 from '../Musics/See tin.mp3';
+import PickASide from '../Assets/Musics/Pick a Side.mp3';
+import Arsenal from '../Assets/Musics/Arsenal.mp3';
+import CoreContainment from '../Assets/Musics/Core Containment.mp3';
+import CutThrough from '../Assets/Musics/Cut Through.mp3';
+import FromTheStars from '../Assets/Musics/From The Stars.mp3';
+import LamentingTheDays from '../Assets/Musics/Lamenting The Days.mp3';
+import Infection from '../Assets/Musics/Infection.mp3';
+import Numb from '../Assets/Musics/Numb.mp3';
+import PartyOfYourLifetime from '../Assets/Musics/Party Of Your Lifetime.mp3';
+import RottenLives from '../Assets/Musics/Rotten Lives.mp3';
+import SeeItInTheFlesh from '../Assets/Musics/See It In The Flesh.mp3';
+import TheCall from '../Assets/Musics/The Call.mp3';
+import ShutItDown from '../Assets/Musics/Shut It Down.mp3';
+import TheGreatDespair from '../Assets/Musics/The Great Despair.mp3';
 
 // Images
 import MusicImage from '../images/Music.png';
@@ -33,25 +43,55 @@ interface MusicItem {
 const Musics: React.FC = () => {
   // Original music items
   const musicItems = [
-    { id: 1, title: 'Bumble Bee', audioSrc: Music1 },
-    { id: 2, title: 'Chicken Dance', audioSrc: Music2 },
-    { id: 3, title: 'Pretty Little Baby', audioSrc: Music3 },
-    { id: 4, title: 'See Tinh', audioSrc: Music4 },
+    { id: 1, title: 'Pick a Side', audioSrc: PickASide },
+  { id: 2, title: 'Arsenal', audioSrc: Arsenal },
+  { id: 3, title: 'Core Containment', audioSrc: CoreContainment },
+  { id: 4, title: 'Cut Through', audioSrc: CutThrough },
+  { id: 5, title: 'From The Stars', audioSrc: FromTheStars },
+  { id: 6, title: 'Lamenting The Days', audioSrc: LamentingTheDays },
+  { id: 7, title: 'Infection', audioSrc: Infection },
+  { id: 8, title: 'Numb', audioSrc: Numb },
+  { id: 9, title: 'Party Of Your Lifetime', audioSrc: PartyOfYourLifetime },
+  { id: 10, title: 'Rotten Lives', audioSrc: RottenLives },
+  { id: 11, title: 'See It In The Flesh', audioSrc: SeeItInTheFlesh },
+  { id: 12, title: 'The Call', audioSrc: TheCall },
+  { id: 13, title: 'Shut It Down', audioSrc: ShutItDown },
+  { id: 14, title: 'The Great Despair', audioSrc: TheGreatDespair },
   ];
 
-  // Initialize audio refs for each music item
-  const audioRef1 = useRef<HTMLAudioElement>(null);
-  const audioRef2 = useRef<HTMLAudioElement>(null);
-  const audioRef3 = useRef<HTMLAudioElement>(null);
-  const audioRef4 = useRef<HTMLAudioElement>(null);
+  // Initialize audio refs for all 14 music tracks
+const audioRef1 = useRef<HTMLAudioElement>(null);
+const audioRef2 = useRef<HTMLAudioElement>(null);
+const audioRef3 = useRef<HTMLAudioElement>(null);
+const audioRef4 = useRef<HTMLAudioElement>(null);
+const audioRef5 = useRef<HTMLAudioElement>(null);
+const audioRef6 = useRef<HTMLAudioElement>(null);
+const audioRef7 = useRef<HTMLAudioElement>(null);
+const audioRef8 = useRef<HTMLAudioElement>(null);
+const audioRef9 = useRef<HTMLAudioElement>(null);
+const audioRef10 = useRef<HTMLAudioElement>(null);
+const audioRef11 = useRef<HTMLAudioElement>(null);
+const audioRef12 = useRef<HTMLAudioElement>(null);
+const audioRef13 = useRef<HTMLAudioElement>(null);
+const audioRef14 = useRef<HTMLAudioElement>(null);
 
-  // Create a map of audio refs by ID
-  const audioRefs = {
-    1: audioRef1,
-    2: audioRef2,
-    3: audioRef3,
-    4: audioRef4,
-  };
+// Map audio refs by track ID (1-14)
+const audioRefs = {
+  1: audioRef1,
+  2: audioRef2,
+  3: audioRef3,
+  4: audioRef4,
+  5: audioRef5,
+  6: audioRef6,
+  7: audioRef7,
+  8: audioRef8,
+  9: audioRef9,
+  10: audioRef10,
+  11: audioRef11,
+  12: audioRef12,
+  13: audioRef13,
+  14: audioRef14,
+};
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [centeredCard, setCenteredCard] = useState<number | null>(1);
@@ -345,13 +385,6 @@ const Musics: React.FC = () => {
   };
 
   return (
-    <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>Musics</IonTitle>
-        </IonToolbar>
-      </IonHeader>
-
       <IonContent fullscreen>
         <ModelSearch onSearch={handleSearch} />
 
@@ -453,7 +486,6 @@ const Musics: React.FC = () => {
           </div>
         </IonCard>
       </IonContent>
-    </IonPage>
   );
 };
 
