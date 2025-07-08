@@ -15,7 +15,7 @@ import reverseImage from '../Assets/reverse.png';
 import clem from '../Assets/Responses/Clem.wav';
 import success from '../Assets/Responses/Launch.wav';
 import { fetchAvailableModels } from '../services/ModelsService';
-import Musics from './Musics';
+import Musics, { MusicPlayerHandle } from './Musics';
 import Suda from '../Assets/Suda/Suda.png';
 
 interface HologramModel {
@@ -77,6 +77,8 @@ const Hologram: React.FC = () => {
   const [micEnabled, setMicEnabled] = useState(false);
   const [isWindows, setIsWindows] = useState(false);
   const [showMusicPlayer, setShowMusicPlayer] = useState(true);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const musicPlayerRef = useRef<MusicPlayerHandle>(null);
 
   const responseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const modelChangeTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -182,6 +184,12 @@ const Hologram: React.FC = () => {
       setIsVoiceActive(false);
       setMicEnabled(false);
     } else {
+      // If music is playing, pause it first
+      if (isMusicPlaying) {
+        setIsMusicPlaying(false);
+        musicPlayerRef.current?.pause();
+      }
+
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         stream.getTracks().forEach(track => track.stop());
@@ -331,7 +339,16 @@ const Hologram: React.FC = () => {
         >
           <IonIcon icon={chevronDownOutline} />
         </button>
-        <Musics />
+        <Musics 
+          ref={musicPlayerRef}
+          isMicActive={micEnabled}
+          onPlayStateChange={setIsMusicPlaying}
+          onPlayRequest={() => {
+            if (micEnabled) {
+              toggleMic(); // Turn off mic if music starts playing
+            }
+          }}
+        />
       </div>
 
       {!showMusicPlayer && (
@@ -345,7 +362,6 @@ const Hologram: React.FC = () => {
       )}
     </IonPage>
   );
-
 };
 
 export default Hologram;
