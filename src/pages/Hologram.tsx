@@ -1,9 +1,11 @@
 import {
   IonContent, IonPage, IonHeader, IonToolbar,
-  IonTitle, useIonViewWillEnter, useIonViewWillLeave, IonTabBar, IonTabButton
+  IonTitle, useIonViewWillEnter, useIonViewWillLeave
 } from '@ionic/react';
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { IonIcon } from '@ionic/react';
+import { chevronDownOutline } from 'ionicons/icons';
 import './Hologram.css';
 import Octavia from '../Assets/Warframes/Octavia.png';
 import VoiceService from '../services/VoiceService';
@@ -43,6 +45,9 @@ const Hologram: React.FC = () => {
   // Audio refs
   const clemSound = useRef(new Audio(clem)).current;
   const successSound = useRef(new Audio(success)).current;
+  // Add at the top of your Hologram component:
+  const [showMusicPlayer, setShowMusicPlayer] = useState(true);
+
 
 
   useEffect(() => {
@@ -266,8 +271,7 @@ const Hologram: React.FC = () => {
           </div>
         )}
       </IonContent>
-      <IonPage>
-        {/* Fixed bottom music player */}
+      {showMusicPlayer && (
         <div
           style={{
             position: 'fixed',
@@ -279,9 +283,29 @@ const Hologram: React.FC = () => {
             zIndex: 1000,
           }}
         >
+          {/* Down icon on top-right */}
+          <button
+            onClick={() => setShowMusicPlayer(false)}
+            style={{
+              position: 'absolute',
+              top: '8px',
+              right: '12px',
+              background: 'transparent',
+              border: 'none',
+              color: '#fff',
+              fontSize: '24px',
+              cursor: 'pointer',
+              zIndex: 1001,
+            }}
+            title="Hide Music Player"
+          >
+            <IonIcon icon={chevronDownOutline} />
+          </button>
+
+          {/* Music content */}
           <Musics />
         </div>
-      </IonPage>
+      )}
 
     </IonPage>
   );
