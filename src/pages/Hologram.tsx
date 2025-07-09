@@ -194,19 +194,19 @@ const Hologram: React.FC = () => {
     }
   }, [location.state]);
 
-const playHelloSound = async () => {
-  try {
-    setIsResponding(true);
-    setIsPlayingSudaAudio(true);
-    switchModelWithFade(SUDA_RESPONSE_MODEL);
-    await playAudio('hello'); // fully blocking now
-  } catch (e) {
-    console.error("Hello sound error:", e);
-  } finally {
-    setIsResponding(false);
-    setIsPlayingSudaAudio(false);
-  }
-};
+  const playHelloSound = async () => {
+    try {
+      setIsResponding(true);
+      setIsPlayingSudaAudio(true);
+      switchModelWithFade(SUDA_RESPONSE_MODEL);
+      await playAudio('hello'); // fully blocking now
+    } catch (e) {
+      console.error("Hello sound error:", e);
+    } finally {
+      setIsResponding(false);
+      setIsPlayingSudaAudio(false);
+    }
+  };
 
   const handleReverseClick = async () => {
     setIsReversed(!isReversed);
@@ -217,42 +217,42 @@ const playHelloSound = async () => {
     }
   };
 
- const toggleMic = async () => {
-  if (micEnabled) {
-    // 🔇 Stop listening
-    VoiceService.stopListening();
-    setIsVoiceActive(false);
-    setMicEnabled(false);
-  } else {
-    // ⏸ Pause music if needed
-    if (isMusicPlaying) {
-      setIsMusicPlaying(false);
-      musicPlayerRef.current?.pause();
-    }
-
-    try {
-      // ✅ 1. First, play audio completely
-      await playHelloSound(); // <-- mic is still OFF here
-
-      // ✅ 2. THEN request microphone permission and turn it on
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach(track => track.stop());
-      setPermissionGranted(true);
-
-      // ✅ 3. THEN start voice service
-      const started = await VoiceService.startListening(handleVoiceCommand);
-      if (started) {
-        setIsVoiceActive(true);
-        setMicEnabled(true);
-      }
-    } catch (error) {
-      console.error("Mic activation error:", error);
-      setPermissionGranted(false);
+  const toggleMic = async () => {
+    if (micEnabled) {
+      // 🔇 Stop listening
+      VoiceService.stopListening();
       setIsVoiceActive(false);
       setMicEnabled(false);
+    } else {
+      // ⏸ Pause music if needed
+      if (isMusicPlaying) {
+        setIsMusicPlaying(false);
+        musicPlayerRef.current?.pause();
+      }
+
+      try {
+        // ✅ 1. First, play audio completely
+        await playHelloSound(); // <-- mic is still OFF here
+
+        // ✅ 2. THEN request microphone permission and turn it on
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+        setPermissionGranted(true);
+
+        // ✅ 3. THEN start voice service
+        const started = await VoiceService.startListening(handleVoiceCommand);
+        if (started) {
+          setIsVoiceActive(true);
+          setMicEnabled(true);
+        }
+      } catch (error) {
+        console.error("Mic activation error:", error);
+        setPermissionGranted(false);
+        setIsVoiceActive(false);
+        setMicEnabled(false);
+      }
     }
-  }
-};
+  };
 
   const handleModelChange = useCallback(async (modelName: string | HologramModel | null) => {
     if (!modelName) {
@@ -297,28 +297,48 @@ const playHelloSound = async () => {
     }
   }, []);
 
-  const handleVoiceCommand = useCallback(async (command: string) => {
-    try {
-      setIsResponding(true);
-      clearTimeout(responseTimeoutRef.current as NodeJS.Timeout);
+const handleVoiceCommand = useCallback(async (command: string) => {
+  try {
+    setIsResponding(true);
+    clearTimeout(responseTimeoutRef.current as NodeJS.Timeout);
+    switchModelWithFade(SUDA_RESPONSE_MODEL);
 
-      // Set Suda1 (talking) immediately before processing
-      switchModelWithFade(SUDA_RESPONSE_MODEL);
+    const result = await CommandList(command);
 
-      const result = await CommandList(command);
-
-      if (result.action === 'changeModel' && result.model) {
-        await handleModelChange(result.model);
-      }
-
+    if (result.action === 'changeModel' && result.model) {
+      await handleModelChange(result.model);
+    }
+    else if (result.action === 'hello') {
       responseTimeoutRef.current = setTimeout(() => {
         setIsResponding(false);
       }, 2000);
-    } catch (error) {
-      console.error("Command error:", error);
-      setIsResponding(false);
     }
-  }, [handleModelChange]);
+    else if (result.action === 'playMusic') {
+      // If mic is active, request to turn it off first
+      if (micEnabled) {
+        toggleMic(); // This will turn off the mic
+      }
+      // If we have a specific music ID to play
+      if (result.musicId) {
+        setTimeout(() => {
+          musicPlayerRef.current?.playTrack?.(result.musicId!);
+        }, 500); // Small delay to ensure UI updates
+      }
+      // If we just have a title (no ID match)
+      else if (result.musicTitle) {
+        // You might want to highlight/search for this title in the player
+        console.log("Search for music:", result.musicTitle);
+      }
+    }
+
+    responseTimeoutRef.current = setTimeout(() => {
+      setIsResponding(false);
+    }, 2000);
+  } catch (error) {
+    console.error("Command error:", error);
+    setIsResponding(false);
+  }
+}, [handleModelChange, micEnabled, showMusicPlayer, toggleMic]);
 
   useIonViewWillEnter(() => {
     // Blur any focused element

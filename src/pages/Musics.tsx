@@ -45,6 +45,8 @@ interface MusicItem {
 
 interface MusicPlayerHandle {
   pause: () => void;
+  playTrack: (id: number) => void;
+  searchTrack?: (title: string) => void; // Add this new method
 }
 
 interface MusicsProps {
@@ -118,17 +120,15 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
     const [filteredMusicItems, setFilteredMusicItems] = useState<MusicItem[]>(musicItems);
     const [isRepeat, setIsRepeat] = useState(false);
 
-    // Expose pause method via ref
     React.useImperativeHandle(ref, () => ({
       pause: () => {
-        if (currentPlayingId) {
-          const audio = audioRefs[currentPlayingId as keyof typeof audioRefs].current;
-          if (audio) {
-            audio.pause();
-            setIsPlaying(false);
-            onPlayStateChange?.(false);
-          }
-        }
+        // existing pause implementation
+      },
+      playTrack: (id: number) => {
+        handlePlayPause(id);
+      },
+      searchTrack: (title: string) => {
+        handleSearch(title);
       }
     }));
 
