@@ -51,12 +51,27 @@ export const initiateModelChange = async (): Promise<string | null> => {
 };
 
 export const CommandList = async (command: string): Promise<{
-  action: 'changeModel' | 'hello' | 'unknown' | 'timeout' | 'invalidModel';
+  action: 'changeModel' | 'hello' | 'unknown' | 'timeout' | 'invalidModel' | 'playMusic';
   model?: ImageData;
+  musicTitle?: string;
 }> => {
   const normalized = command.trim().toLowerCase();
 
-  // 1. Handle model change command
+  // 1. Play specific music
+  if (normalized.includes("play music")) {
+    await playAudio('playmusic');
+
+    // Extract title after "play music"
+    const parts = normalized.split("play music");
+    const titlePart = parts[1]?.trim() || "";
+
+    if (titlePart.length > 0) {
+      return { action: 'playMusic', musicTitle: titlePart };
+    } else {
+      return { action: 'playMusic' }; // no title, just open the player maybe
+    }
+  }
+  // 2. Handle model change command
   if (normalized.includes("change warframe")) {
     const modelName = await initiateModelChange();
     
@@ -74,13 +89,13 @@ export const CommandList = async (command: string): Promise<{
     return { action: 'invalidModel' };
   }
 
-  // 2. Handle hello command
+  // 3. Handle hello command
   if (normalized.includes("sudha")) {
     await playAudio('suda');
     return { action: 'hello' };
   }
 
-  // 3. Default unknown command
+  // 4. Default unknown command
   await playAudio('invalid');
   return { action: 'unknown' };
 };
