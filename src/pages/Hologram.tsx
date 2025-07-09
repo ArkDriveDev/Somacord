@@ -59,17 +59,30 @@ preloadAudio('hello', hello);
 preloadAudio('clem', clem);
 preloadAudio('success', success);
 
-const playAudio = async (name: string): Promise<void> => {
-  try {
-    const audio = audioCache[name].cloneNode(true) as HTMLAudioElement;
-    await audio.play();
-    await new Promise<void>((resolve) => {
-      audio.onended = () => resolve();
-      audio.onerror = () => resolve();
+const playAudio = (name: string): Promise<void> => {
+  return new Promise((resolve) => {
+    const src = audioCache[name]?.src;
+    if (!src) {
+      console.warn(`Audio ${name} not in cache`);
+      return resolve();
+    }
+
+    const audio = new Audio(src);
+    audio.volume = 0.8;
+
+    const finish = () => {
+      audio.removeEventListener('ended', finish);
+      audio.removeEventListener('error', finish);
+      resolve();
+    };
+
+    audio.addEventListener('ended', finish);
+    audio.addEventListener('error', finish);
+    audio.play().catch((err) => {
+      console.error(`Playback error for ${name}:`, err);
+      resolve(); // fallback
     });
-  } catch (err) {
-    console.error(`Audio playback error (${name}):`, err);
-  }
+  });
 };
 
 const Hologram: React.FC = () => {
@@ -181,20 +194,19 @@ const Hologram: React.FC = () => {
     }
   }, [location.state]);
 
-  const playHelloSound = async () => {
-    try {
-      setIsResponding(true);
-      setIsPlayingSudaAudio(true);
-      switchModelWithFade(SUDA_RESPONSE_MODEL);
-      await playAudio('hello');
-
-    } catch (e) {
-      console.error("Hello sound error:", e);
-    } finally {
-      setIsResponding(false);
-      setIsPlayingSudaAudio(false);
-    }
-  };
+const playHelloSound = async () => {
+  try {
+    setIsResponding(true);
+    setIsPlayingSudaAudio(true);
+    switchModelWithFade(SUDA_RESPONSE_MODEL);
+    await playAudio('hello'); // fully blocking now
+  } catch (e) {
+    console.error("Hello sound error:", e);
+  } finally {
+    setIsResponding(false);
+    setIsPlayingSudaAudio(false);
+  }
+};
 
   const handleReverseClick = async () => {
     setIsReversed(!isReversed);
@@ -205,38 +217,42 @@ const Hologram: React.FC = () => {
     }
   };
 
-  const toggleMic = async () => {
-    if (micEnabled) {
-      VoiceService.stopListening();
+ const toggleMic = async () => {
+  if (micEnabled) {
+    // 🔇 Stop listening
+    VoiceService.stopListening();
+    setIsVoiceActive(false);
+    setMicEnabled(false);
+  } else {
+    // ⏸ Pause music if needed
+    if (isMusicPlaying) {
+      setIsMusicPlaying(false);
+      musicPlayerRef.current?.pause();
+    }
+
+    try {
+      // ✅ 1. First, play audio completely
+      await playHelloSound(); // <-- mic is still OFF here
+
+      // ✅ 2. THEN request microphone permission and turn it on
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+      setPermissionGranted(true);
+
+      // ✅ 3. THEN start voice service
+      const started = await VoiceService.startListening(handleVoiceCommand);
+      if (started) {
+        setIsVoiceActive(true);
+        setMicEnabled(true);
+      }
+    } catch (error) {
+      console.error("Mic activation error:", error);
+      setPermissionGranted(false);
       setIsVoiceActive(false);
       setMicEnabled(false);
-    } else {
-      // If music is playing, pause it first
-      if (isMusicPlaying) {
-        setIsMusicPlaying(false);
-        musicPlayerRef.current?.pause();
-      }
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(track => track.stop());
-        setPermissionGranted(true);
-
-        const started = await VoiceService.startListening(handleVoiceCommand);
-        setIsVoiceActive(started);
-        setMicEnabled(started);
-
-        if (started) {
-          await playHelloSound();
-        }
-      } catch (error) {
-        console.error("Voice init error:", error);
-        setPermissionGranted(false);
-        setIsVoiceActive(false);
-        setMicEnabled(false);
-      }
     }
-  };
+  }
+};
 
   const handleModelChange = useCallback(async (modelName: string | HologramModel | null) => {
     if (!modelName) {
