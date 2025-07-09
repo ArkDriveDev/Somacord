@@ -3,6 +3,7 @@ import changemodel from '../Assets/Responses/Suda3.wav';
 import invalid from '../Assets/Responses/Suda6.wav';
 import suda from '../Assets/Responses/Suda2.wav';
 import failed from '../Assets/Responses/Suda5.wav';
+import playmusic from '../Assets/Responses/Suda4.wav';
 import { findModelByName, ImageData } from './ModelsService';
 import VoiceService from './VoiceService';
 
@@ -22,6 +23,7 @@ preloadAudio('suda', suda);
 preloadAudio('invalid', invalid);
 preloadAudio('changemodel', changemodel);
 preloadAudio('failed', failed);
+preloadAudio('playmusic', playmusic);
 
 const playAudio = async (sound: string): Promise<void> => {
   try {
