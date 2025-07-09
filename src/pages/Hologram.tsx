@@ -16,7 +16,9 @@ import clem from '../Assets/Responses/Clem.wav';
 import success from '../Assets/Responses/Launch.wav';
 import { fetchAvailableModels } from '../services/ModelsService';
 import Musics, { MusicPlayerHandle } from './Musics';
-import Suda from '../Assets/Suda/Suda.png';
+import SudaDefault from '../Assets/Suda/Suda.png';
+import SudaResponse from '../Assets/Suda/Suda1.png';
+
 
 interface HologramModel {
   id: number;
@@ -33,7 +35,13 @@ const DEFAULT_MODEL: HologramModel = {
 const SUDA_MODEL: HologramModel = {
   id: 2,
   name: 'Suda',
-  src: Suda
+  src: SudaDefault
+};
+
+const SUDA_RESPONSE_MODEL: HologramModel = {
+  id: 3,
+  name: 'SudaResponse',
+  src: SudaResponse
 };
 
 // Audio cache
@@ -90,21 +98,31 @@ const Hologram: React.FC = () => {
   }, []);
 
   // Play success sound on Windows when component mounts
-  useEffect(() => {
-    if (isWindows) {
-      const playInitialSound = async () => {
-        try {
-          setIsResponding(true);
-          await playAudio('success');
-        } catch (e) {
-          console.error("Initial sound error:", e);
-        } finally {
-          setTimeout(() => setIsResponding(false), 2000);
+ useEffect(() => {
+  if (isWindows) {
+    const playInitialSound = async () => {
+      try {
+        setIsResponding(true);
+        // Only switch to Suda1.png if current model is Suda
+        if (selectedModel.name === 'Suda') {
+          setSelectedModel(SUDA_RESPONSE_MODEL);
         }
-      };
-      playInitialSound();
-    }
-  }, [isWindows]);
+        await playAudio('success');
+      } catch (e) {
+        console.error("Initial sound error:", e);
+      } finally {
+        setTimeout(() => {
+          setIsResponding(false);
+          // Revert back to Suda.png if we changed it
+          if (selectedModel.name === 'SudaResponse') {
+            setSelectedModel(SUDA_MODEL);
+          }
+        }, 2000);
+      }
+    };
+    playInitialSound();
+  }
+}, [isWindows, selectedModel.name]); // Added dependency
 
   // Handle model switching when responding
   useEffect(() => {
@@ -339,7 +357,7 @@ const Hologram: React.FC = () => {
         >
           <IonIcon icon={chevronDownOutline} />
         </button>
-        <Musics 
+        <Musics
           ref={musicPlayerRef}
           isMicActive={micEnabled}
           onPlayStateChange={setIsMusicPlaying}
