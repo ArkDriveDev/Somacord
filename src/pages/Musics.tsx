@@ -22,7 +22,9 @@ import ShutItDown from '../Assets/Musics/Shut It Down.mp3';
 import TheGreatDespair from '../Assets/Musics/The Great Despair.mp3';
 
 // Images
-import MusicImage from '../Assets/Music.jpg';
+import MusicImage from '../Assets/Warframe 1999.jpg';
+import MusicImage2 from '../Assets/On-lyne.jpg';
+import MusicImage3 from '../Assets/Techrot Encore.jpg'
 
 // Components
 import ModelSearch from '../components/ModelsProps/ModelSearch';
@@ -38,6 +40,7 @@ interface MusicItem {
   id: number;
   title: string;
   audioSrc: string;
+  imageSrc: string; // ✅ Add this line
 }
 
 interface MusicPlayerHandle {
@@ -54,20 +57,20 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
   ({ isMicActive, onPlayStateChange, onPlayRequest }, ref) => {
     // Original music items
     const musicItems = [
-      { id: 1, title: 'Pick a Side', audioSrc: PickASide },
-      { id: 2, title: 'Arsenal', audioSrc: Arsenal },
-      { id: 3, title: 'Core Containment', audioSrc: CoreContainment },
-      { id: 4, title: 'Cut Through', audioSrc: CutThrough },
-      { id: 5, title: 'From The Stars', audioSrc: FromTheStars },
-      { id: 6, title: 'Lamenting The Days', audioSrc: LamentingTheDays },
-      { id: 7, title: 'Infection', audioSrc: Infection },
-      { id: 8, title: 'Numb', audioSrc: Numb },
-      { id: 9, title: 'Party Of Your Lifetime', audioSrc: PartyOfYourLifetime },
-      { id: 10, title: 'Rotten Lives', audioSrc: RottenLives },
-      { id: 11, title: 'See It In The Flesh', audioSrc: SeeItInTheFlesh },
-      { id: 12, title: 'The Call', audioSrc: TheCall },
-      { id: 13, title: 'Shut It Down', audioSrc: ShutItDown },
-      { id: 14, title: 'The Great Despair', audioSrc: TheGreatDespair },
+      { id: 1, title: 'Pick a Side', audioSrc: PickASide, imageSrc: MusicImage },
+      { id: 2, title: 'Arsenal', audioSrc: Arsenal, imageSrc: MusicImage },
+      { id: 3, title: 'Core Containment', audioSrc: CoreContainment, imageSrc: MusicImage },
+      { id: 4, title: 'Cut Through', audioSrc: CutThrough, imageSrc: MusicImage },
+      { id: 5, title: 'From The Stars', audioSrc: FromTheStars, imageSrc: MusicImage3 },
+      { id: 6, title: 'Lamenting The Days', audioSrc: LamentingTheDays, imageSrc: MusicImage3 },
+      { id: 7, title: 'Infection', audioSrc: Infection, imageSrc: MusicImage },
+      { id: 8, title: 'Numb', audioSrc: Numb, imageSrc: MusicImage },
+      { id: 9, title: 'Party Of Your Lifetime', audioSrc: PartyOfYourLifetime, imageSrc: MusicImage2 },
+      { id: 10, title: 'Rotten Lives', audioSrc: RottenLives, imageSrc: MusicImage },
+      { id: 11, title: 'See It In The Flesh', audioSrc: SeeItInTheFlesh, imageSrc: MusicImage },
+      { id: 12, title: 'The Call', audioSrc: TheCall, imageSrc: MusicImage },
+      { id: 13, title: 'Shut It Down', audioSrc: ShutItDown, imageSrc: MusicImage },
+      { id: 14, title: 'The Great Despair', audioSrc: TheGreatDespair, imageSrc: MusicImage },
     ];
 
     // Initialize audio refs for all 14 music tracks
@@ -454,20 +457,21 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
                   className={`music-card ${centeredCard === item.id ? 'snap-center' : ''}`}
                   data-id={item.id}
                 >
-                  <img
-                    src={MusicImage}
-                    className="music-image"
-                    alt={item.title}
-                  />
-                  <IonCardHeader>
-                    <IonCardTitle>{item.title}</IonCardTitle>
-                  </IonCardHeader>
+                  <div
+                    className="music-image-bg"
+                    style={{ backgroundImage: `url(${item.imageSrc})` }}
+                  >
+                    <IonCardHeader className="overlay-header">
+                      <IonCardTitle>{item.title}</IonCardTitle>
+                    </IonCardHeader>
+                  </div>
                   <audio
                     ref={audioRefs[item.id as keyof typeof audioRefs]}
                     src={item.audioSrc}
                     preload="none"
                   />
                 </IonCard>
+
               </div>
             ))}
 

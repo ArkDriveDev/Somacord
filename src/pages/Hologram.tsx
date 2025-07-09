@@ -84,7 +84,7 @@ const Hologram: React.FC = () => {
   const [isPlayingSudaAudio, setIsPlayingSudaAudio] = useState(false);
   const [micEnabled, setMicEnabled] = useState(false);
   const [isWindows, setIsWindows] = useState(false);
-  const [showMusicPlayer, setShowMusicPlayer] = useState(true);
+  const [showMusicPlayer, setShowMusicPlayer] = useState(false);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const musicPlayerRef = useRef<MusicPlayerHandle>(null);
 
