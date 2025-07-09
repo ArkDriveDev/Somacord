@@ -351,7 +351,11 @@ const Hologram: React.FC = () => {
           <IonIcon icon={micEnabled ? micOutline : micOffOutline} />
         </button>
 
-        <div className={`hologram-center ${isResponding ? 'pulse-effect' : ''}`}>
+        <div className={`hologram-center ${isResponding &&
+          (selectedModel.id === SUDA_MODEL.id || selectedModel.id === SUDA_RESPONSE_MODEL.id)
+          ? 'pulse-effect'
+          : ''
+          }`}>
           <img
             src={reverseImage}
             alt="Reverse Hologram"
@@ -370,8 +374,13 @@ const Hologram: React.FC = () => {
                     alt={`${position} Reflection`}
                     className={selectedModel.name === 'Suda' ? 'suda-glow-animation' : ''}
                     onLoad={() => {
-                      if (selectedModel.name === 'Suda') {
+                      if (
+                        selectedModel.id === SUDA_MODEL.id ||
+                        selectedModel.id === SUDA_RESPONSE_MODEL.id
+                      ) {
                         setIsPlayingSudaAudio(true);
+                      } else {
+                        setIsPlayingSudaAudio(false);
                       }
                     }}
                     onError={(e) => (e.currentTarget.src = DEFAULT_MODEL.src)}
