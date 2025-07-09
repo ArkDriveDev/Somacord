@@ -230,43 +230,48 @@ const Hologram: React.FC = () => {
   };
 
   const handleModelChange = useCallback(async (modelName: string | HologramModel | null) => {
-    if (!modelName) {
-      setIsModelChanging(false);
+  if (!modelName) {
+    setIsModelChanging(false);
+    return;
+  }
+
+  try {
+    setIsModelChanging(true);
+    VoiceService.setSystemAudioState(true);
+
+    // Set to Suda.png (default) during model change
+    if (selectedModel.name === 'Suda') {
+      setSelectedModel(SUDA_MODEL);
+    }
+
+    if (typeof modelName !== 'string') {
+      setSelectedModel(modelName);
+      setOriginalModel(modelName);
+      localStorage.setItem('selectedModel', JSON.stringify(modelName));
+      await playAudio('success');
       return;
     }
 
-    try {
-      setIsModelChanging(true);
-      VoiceService.setSystemAudioState(true);
+    const models = await fetchAvailableModels();
+    const normalizedInput = modelName.toLowerCase().trim();
+    const model = models.find(m =>
+      m.name.toLowerCase() === normalizedInput ||
+      m.name.toLowerCase().includes(normalizedInput)
+    );
 
-      if (typeof modelName !== 'string') {
-        setSelectedModel(modelName);
-        setOriginalModel(modelName);
-        localStorage.setItem('selectedModel', JSON.stringify(modelName));
-        await playAudio('success');
-        return;
-      }
-
-      const models = await fetchAvailableModels();
-      const normalizedInput = modelName.toLowerCase().trim();
-      const model = models.find(m =>
-        m.name.toLowerCase() === normalizedInput ||
-        m.name.toLowerCase().includes(normalizedInput)
-      );
-
-      if (model) {
-        setSelectedModel(model);
-        setOriginalModel(model);
-        localStorage.setItem('selectedModel', JSON.stringify(model));
-        await playAudio('success');
-      }
-    } catch (error) {
-      console.error("Model change error:", error);
-    } finally {
-      VoiceService.setSystemAudioState(false);
-      setIsModelChanging(false);
+    if (model) {
+      setSelectedModel(model);
+      setOriginalModel(model);
+      localStorage.setItem('selectedModel', JSON.stringify(model));
+      await playAudio('success');
     }
-  }, []);
+  } catch (error) {
+    console.error("Model change error:", error);
+  } finally {
+    VoiceService.setSystemAudioState(false);
+    setIsModelChanging(false);
+  }
+}, [selectedModel.name]); // Added dependency
 
   const handleVoiceCommand = useCallback(async (command: string) => {
     try {
