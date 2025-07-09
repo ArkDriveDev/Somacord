@@ -315,3 +315,15 @@ ion-content.hologram-container {
 .mic-toggle-button.active {
   color: #4CAF50;
 }
+.model-image-wrapper {
+  opacity: 1;
+  transition: opacity 0.4s ease;
+}
+
+.fade-in {
+  opacity: 1;
+}
+
+.fade-out {
+  opacity: 0;
+}

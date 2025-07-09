@@ -90,6 +90,16 @@ const Hologram: React.FC = () => {
 
   const responseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const modelChangeTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [fadeClass, setFadeClass] = useState('');
+
+  const switchModelWithFade = (model: HologramModel) => {
+    setFadeClass('fade-out');
+    setTimeout(() => {
+      setSelectedModel(model);
+      setFadeClass('fade-in');
+      setTimeout(() => setFadeClass(''), 400); // clear class after animation
+    }, 200); // delay fade-out before switching
+  };
 
   // Check if running on Windows
   useEffect(() => {
@@ -98,42 +108,42 @@ const Hologram: React.FC = () => {
   }, []);
 
   // Play success sound on Windows when component mounts
- useEffect(() => {
-  if (isWindows) {
-    const playInitialSound = async () => {
-      try {
-        // Force Suda static model first
-        setSelectedModel(SUDA_MODEL);
-        setIsResponding(true);
-        await playAudio('success');
-      } catch (e) {
-        console.error("Initial sound error:", e);
-      } finally {
-        setTimeout(() => setIsResponding(false), 2000);
-      }
-    };
-    playInitialSound();
-  }
-}, [isWindows]);
+  useEffect(() => {
+    if (isWindows) {
+      const playInitialSound = async () => {
+        try {
+          // Force Suda static model first
+          switchModelWithFade(SUDA_MODEL);
+          setIsResponding(true);
+          await playAudio('success');
+        } catch (e) {
+          console.error("Initial sound error:", e);
+        } finally {
+          setTimeout(() => setIsResponding(false), 2000);
+        }
+      };
+      playInitialSound();
+    }
+  }, [isWindows]);
 
   // Handle model switching when responding
- useEffect(() => {
-  if (isResponding) {
-    if (
-      selectedModel.id !== SUDA_MODEL.id &&
-      selectedModel.id !== SUDA_RESPONSE_MODEL.id
-    ) {
-      setOriginalModel(selectedModel);
+  useEffect(() => {
+    if (isResponding) {
+      if (
+        selectedModel.id !== SUDA_MODEL.id &&
+        selectedModel.id !== SUDA_RESPONSE_MODEL.id
+      ) {
+        setOriginalModel(selectedModel);
+      }
+    } else {
+      if (
+        selectedModel.id === SUDA_MODEL.id ||
+        selectedModel.id === SUDA_RESPONSE_MODEL.id
+      ) {
+        switchModelWithFade(originalModel);
+      }
     }
-  } else {
-    if (
-      selectedModel.id === SUDA_MODEL.id ||
-      selectedModel.id === SUDA_RESPONSE_MODEL.id
-    ) {
-      setSelectedModel(originalModel);
-    }
-  }
-}, [isResponding, selectedModel, originalModel]);
+  }, [isResponding, selectedModel, originalModel]);
 
   useEffect(() => {
     const observer = new MutationObserver((mutations) => {
@@ -158,14 +168,14 @@ const Hologram: React.FC = () => {
   useEffect(() => {
     const fromRoute = location.state?.model;
     if (fromRoute) {
-      setSelectedModel(fromRoute);
+      switchModelWithFade(fromRoute);
       setOriginalModel(fromRoute);
       localStorage.setItem('selectedModel', JSON.stringify(fromRoute));
     } else {
       const saved = localStorage.getItem('selectedModel');
       if (saved) {
         const parsed = JSON.parse(saved);
-        setSelectedModel(parsed);
+        switchModelWithFade(parsed);
         setOriginalModel(parsed);
       }
     }
@@ -175,7 +185,7 @@ const Hologram: React.FC = () => {
     try {
       setIsResponding(true);
       setIsPlayingSudaAudio(true);
-      setSelectedModel(SUDA_RESPONSE_MODEL);
+      switchModelWithFade(SUDA_RESPONSE_MODEL);
       await playAudio('hello');
 
     } catch (e) {
@@ -228,91 +238,91 @@ const Hologram: React.FC = () => {
     }
   };
 
- const handleModelChange = useCallback(async (modelName: string | HologramModel | null) => {
-  if (!modelName) {
-    setIsModelChanging(false);
-    return;
-  }
-
-  try {
-    setIsModelChanging(true);
-    setSelectedModel(SUDA_MODEL); // Step 1: show Suda.png right away
-    VoiceService.setSystemAudioState(true);
-
-    // Load model info first
-    let resolvedModel: HologramModel | null = null;
-
-    if (typeof modelName !== 'string') {
-      resolvedModel = modelName;
-    } else {
-      const models = await fetchAvailableModels();
-      const normalizedInput = modelName.toLowerCase().trim();
-      resolvedModel = models.find(m =>
-        m.name.toLowerCase() === normalizedInput ||
-        m.name.toLowerCase().includes(normalizedInput)
-      ) || null;
+  const handleModelChange = useCallback(async (modelName: string | HologramModel | null) => {
+    if (!modelName) {
+      setIsModelChanging(false);
+      return;
     }
 
-    // Step 2: Play success sound while Suda.png is visible
-    await playAudio('success');
-
-    // Step 3: After sound, set actual model
-    if (resolvedModel) {
-      setSelectedModel(resolvedModel);
-      setOriginalModel(resolvedModel);
-      localStorage.setItem('selectedModel', JSON.stringify(resolvedModel));
-    }
-
-  } catch (error) {
-    console.error("Model change error:", error);
-  } finally {
-    VoiceService.setSystemAudioState(false);
-    setIsModelChanging(false);
-  }
-}, []);
-
- const handleVoiceCommand = useCallback(async (command: string) => {
-  try {
-    setIsResponding(true);
-    clearTimeout(responseTimeoutRef.current as NodeJS.Timeout);
-
-    // Set Suda1 (talking) immediately before processing
-    setSelectedModel(SUDA_RESPONSE_MODEL);
-
-    const result = await CommandList(command);
-
-    if (result.action === 'changeModel' && result.model) {
-      await handleModelChange(result.model);
-    }
-
-    responseTimeoutRef.current = setTimeout(() => {
-      setIsResponding(false);
-    }, 2000);
-  } catch (error) {
-    console.error("Command error:", error);
-    setIsResponding(false);
-  }
-}, [handleModelChange]);
-
- useIonViewWillEnter(() => {
-  // Blur any focused element
-  document.activeElement instanceof HTMLElement && document.activeElement.blur();
-
-  // Always play success sound + show Suda.png
-  const playIntro = async () => {
     try {
-      setSelectedModel(SUDA_MODEL);     // Show Suda
-      setIsResponding(true);            // Trigger animation/effect
-      await playAudio('success');       // Play welcome sound
-    } catch (err) {
-      console.error("Intro sound error:", err);
-    } finally {
-      setTimeout(() => setIsResponding(false), 2000); // Reset after delay
-    }
-  };
+      setIsModelChanging(true);
+      switchModelWithFade(SUDA_MODEL); // Step 1: show Suda.png right away
+      VoiceService.setSystemAudioState(true);
 
-  playIntro();
-});
+      // Load model info first
+      let resolvedModel: HologramModel | null = null;
+
+      if (typeof modelName !== 'string') {
+        resolvedModel = modelName;
+      } else {
+        const models = await fetchAvailableModels();
+        const normalizedInput = modelName.toLowerCase().trim();
+        resolvedModel = models.find(m =>
+          m.name.toLowerCase() === normalizedInput ||
+          m.name.toLowerCase().includes(normalizedInput)
+        ) || null;
+      }
+
+      // Step 2: Play success sound while Suda.png is visible
+      await playAudio('success');
+
+      // Step 3: After sound, set actual model
+      if (resolvedModel) {
+        switchModelWithFade(resolvedModel);
+        setOriginalModel(resolvedModel);
+        localStorage.setItem('selectedModel', JSON.stringify(resolvedModel));
+      }
+
+    } catch (error) {
+      console.error("Model change error:", error);
+    } finally {
+      VoiceService.setSystemAudioState(false);
+      setIsModelChanging(false);
+    }
+  }, []);
+
+  const handleVoiceCommand = useCallback(async (command: string) => {
+    try {
+      setIsResponding(true);
+      clearTimeout(responseTimeoutRef.current as NodeJS.Timeout);
+
+      // Set Suda1 (talking) immediately before processing
+      switchModelWithFade(SUDA_RESPONSE_MODEL);
+
+      const result = await CommandList(command);
+
+      if (result.action === 'changeModel' && result.model) {
+        await handleModelChange(result.model);
+      }
+
+      responseTimeoutRef.current = setTimeout(() => {
+        setIsResponding(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Command error:", error);
+      setIsResponding(false);
+    }
+  }, [handleModelChange]);
+
+  useIonViewWillEnter(() => {
+    // Blur any focused element
+    document.activeElement instanceof HTMLElement && document.activeElement.blur();
+
+    // Always play success sound + show Suda.png
+    const playIntro = async () => {
+      try {
+        switchModelWithFade(SUDA_MODEL);     // Show Suda
+        setIsResponding(true);            // Trigger animation/effect
+        await playAudio('success');       // Play welcome sound
+      } catch (err) {
+        console.error("Intro sound error:", err);
+      } finally {
+        setTimeout(() => setIsResponding(false), 2000); // Reset after delay
+      }
+    };
+
+    playIntro();
+  });
 
   useIonViewWillLeave(() => {
     VoiceService.stopListening();
@@ -352,17 +362,21 @@ const Hologram: React.FC = () => {
           <div className={`reflection-base ${isReversed ? 'reversed' : ''}`}>
             {['top', 'right', 'bottom', 'left'].map((position) => (
               <div key={position} className={`reflection-image ${position}`}>
-                <img
-                  src={selectedModel.src}
-                  alt={`${position} Reflection`}
-                  className={selectedModel.name === 'Suda' ? 'suda-glow-animation' : ''}
-                  onLoad={() => {
-                    if (selectedModel.name === 'Suda') {
-                      setIsPlayingSudaAudio(true);
-                    }
-                  }}
-                  onError={(e) => (e.currentTarget.src = DEFAULT_MODEL.src)}
-                />
+                <div
+                  className={`model-image-wrapper ${fadeClass}`} // <-- add fadeClass state
+                >
+                  <img
+                    src={selectedModel.src}
+                    alt={`${position} Reflection`}
+                    className={selectedModel.name === 'Suda' ? 'suda-glow-animation' : ''}
+                    onLoad={() => {
+                      if (selectedModel.name === 'Suda') {
+                        setIsPlayingSudaAudio(true);
+                      }
+                    }}
+                    onError={(e) => (e.currentTarget.src = DEFAULT_MODEL.src)}
+                  />
+                </div>
               </div>
             ))}
           </div>
