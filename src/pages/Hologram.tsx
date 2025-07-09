@@ -294,9 +294,25 @@ const Hologram: React.FC = () => {
   }
 }, [handleModelChange]);
 
-  useIonViewWillEnter(() => {
-    document.activeElement instanceof HTMLElement && document.activeElement.blur();
-  });
+ useIonViewWillEnter(() => {
+  // Blur any focused element
+  document.activeElement instanceof HTMLElement && document.activeElement.blur();
+
+  // Always play success sound + show Suda.png
+  const playIntro = async () => {
+    try {
+      setSelectedModel(SUDA_MODEL);     // Show Suda
+      setIsResponding(true);            // Trigger animation/effect
+      await playAudio('success');       // Play welcome sound
+    } catch (err) {
+      console.error("Intro sound error:", err);
+    } finally {
+      setTimeout(() => setIsResponding(false), 2000); // Reset after delay
+    }
+  };
+
+  playIntro();
+});
 
   useIonViewWillLeave(() => {
     VoiceService.stopListening();
