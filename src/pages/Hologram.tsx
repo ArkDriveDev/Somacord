@@ -98,45 +98,48 @@ const Hologram: React.FC = () => {
   }, []);
 
   // Play success sound on Windows when component mounts
- useEffect(() => {
-  if (isWindows) {
-    const playInitialSound = async () => {
-      try {
-        setIsResponding(true);
-        // Only switch to Suda1.png if current model is Suda
-        if (selectedModel.name === 'Suda') {
-          setSelectedModel(SUDA_RESPONSE_MODEL);
+  useEffect(() => {
+    if (isWindows) {
+      const playInitialSound = async () => {
+        try {
+          setIsResponding(true);
+          setSelectedModel(SUDA_MODEL); // <-- show Suda.png during boot
+          await playAudio('success');
+        } catch (e) {
+          console.error("Initial sound error:", e);
+        } finally {
+          setTimeout(() => setIsResponding(false), 2000);
         }
-        await playAudio('success');
-      } catch (e) {
-        console.error("Initial sound error:", e);
-      } finally {
-        setTimeout(() => {
-          setIsResponding(false);
-          // Revert back to Suda.png if we changed it
-          if (selectedModel.name === 'SudaResponse') {
-            setSelectedModel(SUDA_MODEL);
-          }
-        }, 2000);
-      }
-    };
-    playInitialSound();
-  }
-}, [isWindows, selectedModel.name]); // Added dependency
+      };
+      playInitialSound();
+    }
+  }, [isWindows]);
 
   // Handle model switching when responding
   useEffect(() => {
-    if (isResponding) {
-      if (selectedModel.id !== SUDA_MODEL.id) {
-        setOriginalModel(selectedModel);
-      }
-      setSelectedModel(SUDA_MODEL);
-    } else {
-      if (selectedModel.id === SUDA_MODEL.id) {
-        setSelectedModel(originalModel);
-      }
+  if (isResponding) {
+    if (
+      selectedModel.id !== SUDA_MODEL.id &&
+      selectedModel.id !== SUDA_RESPONSE_MODEL.id
+    ) {
+      setOriginalModel(selectedModel);
     }
-  }, [isResponding, selectedModel, originalModel]);
+
+    // Use the appropriate model depending on what triggered the response
+    if (selectedModel.id !== SUDA_RESPONSE_MODEL.id) {
+      setSelectedModel(SUDA_MODEL); // Default to Suda.png
+    }
+
+  } else {
+    if (
+      selectedModel.id === SUDA_MODEL.id ||
+      selectedModel.id === SUDA_RESPONSE_MODEL.id
+    ) {
+      setSelectedModel(originalModel);
+    }
+  }
+}, [isResponding, selectedModel, originalModel]);
+
 
   useEffect(() => {
     const observer = new MutationObserver((mutations) => {
@@ -178,7 +181,9 @@ const Hologram: React.FC = () => {
     try {
       setIsResponding(true);
       setIsPlayingSudaAudio(true);
+      setSelectedModel(SUDA_RESPONSE_MODEL);
       await playAudio('hello');
+
     } catch (e) {
       console.error("Hello sound error:", e);
     } finally {
@@ -230,48 +235,45 @@ const Hologram: React.FC = () => {
   };
 
   const handleModelChange = useCallback(async (modelName: string | HologramModel | null) => {
-  if (!modelName) {
-    setIsModelChanging(false);
-    return;
-  }
-
-  try {
-    setIsModelChanging(true);
-    VoiceService.setSystemAudioState(true);
-
-    // Set to Suda.png (default) during model change
-    if (selectedModel.name === 'Suda') {
-      setSelectedModel(SUDA_MODEL);
-    }
-
-    if (typeof modelName !== 'string') {
-      setSelectedModel(modelName);
-      setOriginalModel(modelName);
-      localStorage.setItem('selectedModel', JSON.stringify(modelName));
-      await playAudio('success');
+    if (!modelName) {
+      setIsModelChanging(false);
       return;
     }
 
-    const models = await fetchAvailableModels();
-    const normalizedInput = modelName.toLowerCase().trim();
-    const model = models.find(m =>
-      m.name.toLowerCase() === normalizedInput ||
-      m.name.toLowerCase().includes(normalizedInput)
-    );
+    try {
+      setIsModelChanging(true);
+      VoiceService.setSystemAudioState(true);
 
-    if (model) {
-      setSelectedModel(model);
-      setOriginalModel(model);
-      localStorage.setItem('selectedModel', JSON.stringify(model));
-      await playAudio('success');
+      if (typeof modelName !== 'string') {
+        setSelectedModel(modelName);
+        setOriginalModel(modelName);
+        localStorage.setItem('selectedModel', JSON.stringify(modelName));
+        setSelectedModel(SUDA_MODEL);
+        await playAudio('success');
+        return;
+      }
+
+      const models = await fetchAvailableModels();
+      const normalizedInput = modelName.toLowerCase().trim();
+      const model = models.find(m =>
+        m.name.toLowerCase() === normalizedInput ||
+        m.name.toLowerCase().includes(normalizedInput)
+      );
+
+      if (model) {
+        setSelectedModel(model);
+        setOriginalModel(model);
+        localStorage.setItem('selectedModel', JSON.stringify(model));
+        setSelectedModel(SUDA_MODEL);
+        await playAudio('success');
+      }
+    } catch (error) {
+      console.error("Model change error:", error);
+    } finally {
+      VoiceService.setSystemAudioState(false);
+      setIsModelChanging(false);
     }
-  } catch (error) {
-    console.error("Model change error:", error);
-  } finally {
-    VoiceService.setSystemAudioState(false);
-    setIsModelChanging(false);
-  }
-}, [selectedModel.name]); // Added dependency
+  }, []);
 
   const handleVoiceCommand = useCallback(async (command: string) => {
     try {
