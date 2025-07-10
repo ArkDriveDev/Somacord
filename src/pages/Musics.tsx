@@ -60,14 +60,14 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
     // Original music items
     const musicItems = [
       { id: 1, title: 'Pick a Side', audioSrc: PickASide, imageSrc: MusicImage },
-      { id: 2, title: 'Arsenal', audioSrc: Arsenal, imageSrc: MusicImage },
+      { id: 2, title: 'Arsenal.', audioSrc: Arsenal, imageSrc: MusicImage },
       { id: 3, title: 'Core Containment', audioSrc: CoreContainment, imageSrc: MusicImage },
       { id: 4, title: 'Cut Through', audioSrc: CutThrough, imageSrc: MusicImage },
       { id: 5, title: 'From The Stars', audioSrc: FromTheStars, imageSrc: MusicImage3 },
       { id: 6, title: 'Lamenting The Days', audioSrc: LamentingTheDays, imageSrc: MusicImage3 },
       { id: 7, title: 'Infection', audioSrc: Infection, imageSrc: MusicImage },
       { id: 8, title: 'Numb', audioSrc: Numb, imageSrc: MusicImage },
-      { id: 9, title: 'Party Of Your Lifetime', audioSrc: PartyOfYourLifetime, imageSrc: MusicImage2 },
+      { id: 9, title: 'party of your lifetime', audioSrc: PartyOfYourLifetime, imageSrc: MusicImage2 },
       { id: 10, title: 'Rotten Lives', audioSrc: RottenLives, imageSrc: MusicImage },
       { id: 11, title: 'See It In The Flesh', audioSrc: SeeItInTheFlesh, imageSrc: MusicImage },
       { id: 12, title: 'The Call', audioSrc: TheCall, imageSrc: MusicImage },
@@ -125,10 +125,24 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
         // existing pause implementation
       },
       playTrack: (id: number) => {
+        console.log("playTrack called with ID:", id); // ✅ LOG HERE
         handlePlayPause(id);
       },
       searchTrack: (title: string) => {
+        console.log("searchTrack called with title:", title);
         handleSearch(title);
+
+        // Attempt to find the matching item and play it
+        const match = musicItems.find(item =>
+          item.title.toLowerCase() === title.toLowerCase()
+        );
+
+        if (match) {
+          console.log("Auto-playing track:", match.title);
+          setTimeout(() => handlePlayPause(match.id), 500); // delay to let scroll finish
+        } else {
+          console.warn("Track not found:", title);
+        }
       }
     }));
 
@@ -145,6 +159,30 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
       }
     };
 
+    useEffect(() => {
+      if (isMicActive && isPlaying) {
+        const audioRef = currentPlayingId
+          ? audioRefs[currentPlayingId as keyof typeof audioRefs].current
+          : null;
+
+        if (audioRef) {
+          const handlePause = async () => {
+            try {
+              await audioRef.pause();
+              setIsPlaying(false);
+              if (onPlayStateChange) {
+                onPlayStateChange(false);
+              }
+            } catch (error) {
+              console.error("Pause error:", error);
+            }
+          };
+
+          handlePause();
+        }
+      }
+    }, [isMicActive]); // Only trigger when mic state changes
+
     // Update progress while audio plays
     useEffect(() => {
       const audio = currentPlayingId ? audioRefs[currentPlayingId as keyof typeof audioRefs].current : null;
@@ -160,13 +198,13 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
       return () => audio.removeEventListener('timeupdate', updateProgress);
     }, [currentPlayingId]);
 
-    // Handle play/pause
     const handlePlayPause = async (id: number) => {
-      // If mic is active, request it to be turned off first
-      if (isMicActive) {
-        onPlayRequest?.();
-        // Wait a brief moment for the mic to turn off
-        await new Promise(resolve => setTimeout(resolve, 100));
+      console.log("handlePlayPause triggered for ID:", id);
+      // Don't allow playback if mic is active
+      if (isMicActive && onPlayRequest) {
+        console.log("Mic is active. Cancelling play and requesting toggle.");
+        onPlayRequest();
+        return;
       }
 
       const audioRef = audioRefs[id as keyof typeof audioRefs].current;
@@ -174,38 +212,37 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
 
       try {
         if (currentPlayingId === id) {
+          // Toggle current track
           if (isPlaying) {
             await audioRef.pause();
-            onPlayStateChange?.(false);
           } else {
             await audioRef.play();
-            onPlayStateChange?.(true);
           }
           setIsPlaying(!isPlaying);
+          onPlayStateChange?.(!isPlaying);
         } else {
-          // Pause currently playing audio if any
+          // Switch to new track
           if (currentPlayingId) {
             const currentAudio = audioRefs[currentPlayingId as keyof typeof audioRefs].current;
-            if (currentAudio) {
-              await currentAudio.pause();
-              currentAudio.currentTime = 0;
-            }
+            currentAudio?.pause();
           }
 
-          // Play new audio
           audioRef.currentTime = 0;
           await audioRef.play();
           setCurrentPlayingId(id);
           setIsPlaying(true);
           onPlayStateChange?.(true);
+
+          if (centeredCard !== id) {
+            handleCardClick(id);
+          }
         }
       } catch (error) {
-        console.error("Playback failed:", error);
+        console.error("Playback error:", error);
         setIsPlaying(false);
         onPlayStateChange?.(false);
       }
     };
-
 
     // Handle audio ending
     useEffect(() => {
@@ -373,6 +410,7 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
           onPlayStateChange?.(false);
         }
       }
+
 
       const containerWidth = container.offsetWidth;
       const cardRect = card.getBoundingClientRect();

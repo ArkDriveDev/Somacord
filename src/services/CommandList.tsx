@@ -1,4 +1,3 @@
-// src/services/CommandList.ts
 import changemodel from '../Assets/Responses/Suda3.wav';
 import invalid from '../Assets/Responses/Suda6.wav';
 import suda from '../Assets/Responses/Suda2.wav';
@@ -53,7 +52,7 @@ export const initiateModelChange = async (): Promise<string | null> => {
 // Music title to ID mapping
 const musicTitles = [
   { id: 1, title: 'pick a side.', aliases: ['pick side.'] },
-  { id: 2, title: 'arsenal.' },
+  { id: 2, title: 'Arsenal.' },
   { id: 3, title: 'core containment.', aliases: ['core.'] },
   { id: 4, title: 'cut through.', aliases: ['cut.'] },
   { id: 5, title: 'from the stars.', aliases: ['stars.'] },
@@ -70,19 +69,19 @@ const musicTitles = [
 
 const getMusicIdFromTitle = (inputTitle: string): number | null => {
   const normalizedTitle = inputTitle.toLowerCase().trim();
-  
+
   // First try exact match
-  const exactMatch = musicTitles.find(m => 
-    m.title === normalizedTitle ||
-    m.aliases?.includes(normalizedTitle)
+  const exactMatch = musicTitles.find(m =>
+    m.title.toLowerCase() === normalizedTitle ||
+    m.aliases?.some(a => a.toLowerCase() === normalizedTitle)
   );
   if (exactMatch) return exactMatch.id;
 
   // Then try partial matches
   for (const track of musicTitles) {
-    if (normalizedTitle.includes(track.title) || 
-        track.title.includes(normalizedTitle) ||
-        track.aliases?.some(a => normalizedTitle.includes(a))) {
+    if (normalizedTitle.includes(track.title.toLowerCase()) ||
+      track.title.toLowerCase().includes(normalizedTitle) ||
+      track.aliases?.some(a => normalizedTitle.includes(a.toLowerCase()))) {
       return track.id;
     }
   }
@@ -95,47 +94,69 @@ export const CommandList = async (command: string): Promise<{
   model?: ImageData;
   musicId?: number;
   musicTitle?: string;
+  shouldResetModel?: boolean;
 }> => {
   const normalized = command.trim().toLowerCase();
 
   // 1. Play music commands
-  if (normalized.includes("play music") || 
-      normalized.includes("play song") ||
-      normalized.includes("play track")) {
+  if (normalized.includes("play music") ||
+    normalized.includes("play song") ||
+    normalized.includes("play track")) {
     await playAudio('playmusic');
 
     // Extract title after play command
-    const parts = normalized.split(/play music|play song|play track/i);
+    const parts = command.split(/play music|play song|play track/i);
     const titlePart = parts[1]?.trim() || "";
-
+    
     if (titlePart.length > 0) {
       const musicId = getMusicIdFromTitle(titlePart);
       if (musicId) {
-        return { action: 'playMusic', musicId };
+        return { 
+          action: 'playMusic', 
+          musicId,
+          shouldResetModel: true // Will trigger model reset
+        };
       }
-      return { action: 'playMusic', musicTitle: titlePart };
+      return { 
+        action: 'playMusic', 
+        musicTitle: titlePart,
+        shouldResetModel: true 
+      };
     }
-    return { action: 'playMusic' }; // no specific track requested
+    return { 
+      action: 'playMusic',
+      shouldResetModel: true 
+    };
   }
 
   // 2. Handle model change command
-  if (normalized.includes("change warframe") || 
-      normalized.includes("switch warframe") ||
-      normalized.includes("new warframe")) {
+  if (normalized.includes("change warframe") ||
+    normalized.includes("switch warframe") ||
+    normalized.includes("new warframe")) {
     const modelName = await initiateModelChange();
-    
+
     if (!modelName) {
       await playAudio('failed');
-      return { action: 'timeout' };
+      return { 
+        action: 'timeout',
+        shouldResetModel: true 
+      };
     }
 
     const model = await findModelByName(modelName);
     if (model) {
-      return { action: 'changeModel', model };
+      return { 
+        action: 'changeModel', 
+        model,
+        shouldResetModel: false // Keep the new model
+      };
     }
 
     await playAudio('failed');
-    return { action: 'invalidModel' };
+    return { 
+      action: 'invalidModel',
+      shouldResetModel: true 
+    };
   }
 
   // 3. Handle hello/greeting commands
@@ -149,12 +170,18 @@ export const CommandList = async (command: string): Promise<{
   ];
   if (greetings.some(g => normalized.includes(g))) {
     await playAudio('suda');
-    return { action: 'hello' };
+    return { 
+      action: 'hello',
+      shouldResetModel: true 
+    };
   }
 
   // 4. Default unknown command
   await playAudio('invalid');
-  return { action: 'unknown' };
+  return { 
+    action: 'unknown',
+    shouldResetModel: true 
+  };
 };
 
 export default CommandList;
