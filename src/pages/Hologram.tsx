@@ -430,8 +430,6 @@ const Hologram: React.FC = () => {
 
         <div className={`hologram-center ${isResponding &&
           (selectedModel.id === SUDA_MODEL.id || selectedModel.id === SUDA_RESPONSE_MODEL.id)
-          ? 'pulse-effect'
-          : ''
           }`}>
           <img
             src={reverseImage}
