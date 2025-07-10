@@ -133,3 +133,70 @@
     padding: 0 calc(50vw - 20%);
   }
 }
+/* Wrapper to center on the card */
+/* Container */
+.volume-toggle-wrapper {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column-reverse; /* 👈 Reversed column to make slider appear above */
+  align-items: center;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+/* Button styling */
+.volume-button {
+  --padding-start: 6px;
+  --padding-end: 6px;
+  --border-radius: 50%;
+}
+
+/* Slider appears above the icon */
+.volume-slider {
+  width: 100px;
+  margin-bottom: 6px;
+  appearance: none;
+  height: 4px;
+  background: #ffffff; /* Track color */
+  border-radius: 2px;
+  outline: none;
+}
+
+/* WebKit: Chrome, Safari, Brave */
+.volume-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  background: #ffffff; /* Track color */
+  border-radius: 2px;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff; /* Thumb color */
+  cursor: pointer;
+  margin-top: -5px;
+  border: none;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.6); /* Optional glow */
+}
+
+/* Firefox */
+.volume-slider::-moz-range-track {
+  background: #ffffff;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.volume-slider::-moz-range-thumb {
+  background: #ffffff;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.6); /* Optional glow */
+}

@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect, forwardRef } from 'react';
 import {
-  IonContent,
-  IonCard, IonCardHeader, IonCardTitle
+  IonContent,IonButton,
+  IonCard, IonCardHeader, IonCardTitle,IonIcon
 } from '@ionic/react';
+import {volumeHigh} from 'ionicons/icons';
 import './Musics.css';
 
 // Audio files
@@ -35,6 +36,7 @@ import MusicNext from '../components/MusicsProps/MusicNext';
 import MusicRepeatToggle from '../components/MusicsProps/MusicRepeatToggle';
 import SpectrumBars from '../components/MusicsProps/SpectrumBars';
 import MusicShuffleButton from '../components/MusicsProps/MusicShuffleButton';
+import MusicVolume from '../components/MusicsProps/MusicVolume';
 
 interface MusicItem {
   id: number;
@@ -122,6 +124,8 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
     const [searchQuery, setSearchQuery] = useState('');
     const [isShuffle, setIsShuffle] = useState(false);
     const isProgrammaticScroll = useRef(false);
+    const [isVolumeOpen, setIsVolumeOpen] = useState(false);
+
 
     // In Musics.tsx
     React.useImperativeHandle(ref, () => ({
@@ -503,6 +507,7 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
           onTouchMove={handleTouchMove}
           onTouchEnd={handleMouseUp}
         >
+
           <div className="music-scroll-row">
             <div style={{ minWidth: 'calc(50vw - 40%)' }} />
 
@@ -513,25 +518,61 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
                 onClick={() => handleCardClick(item.id)}
                 style={{ cursor: 'pointer' }}
               >
-                <IonCard
-                  className={`music-card ${centeredCard === item.id ? 'snap-center' : ''}`}
-                  data-id={item.id}
-                >
-                  <div
-                    className="music-image-bg"
-                    style={{ backgroundImage: `url(${item.imageSrc})` }}
-                  >
-                    <IonCardHeader className="overlay-header">
-                      <IonCardTitle>{item.title}</IonCardTitle>
-                    </IonCardHeader>
-                  </div>
-                  <audio
-                    ref={audioRefs[item.id as keyof typeof audioRefs]}
-                    src={item.audioSrc}
-                    preload="none"
-                  />
-                </IonCard>
+                <div className="music-card-wrapper" style={{ position: 'relative' }}>
+                  {/* Volume Toggle + Slider */}
+                  {centeredCard === item.id && (
+                    <div className="volume-toggle-wrapper">
+                      <IonButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsVolumeOpen(prev => !prev);
+                        }}
+                        className="volume-button"
+                        color="light"
+                      >
+                        <IonIcon icon={volumeHigh} />
+                      </IonButton>
 
+                      {isVolumeOpen && (
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                          className="volume-slider"
+                          value={audioRefs[currentPlayingId as keyof typeof audioRefs]?.current?.volume || 1}
+                          onChange={(e) => {
+                            const audio = audioRefs[currentPlayingId as keyof typeof audioRefs]?.current;
+                            if (audio) audio.volume = parseFloat(e.target.value);
+                            setTimeout(() => setIsVolumeOpen(false), 1000);
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          onMouseDown={(e) => e.stopPropagation()}
+                        />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Music Card */}
+                  <IonCard
+                    className={`music-card ${centeredCard === item.id ? 'snap-center' : ''}`}
+                    data-id={item.id}
+                  >
+                    <div
+                      className="music-image-bg"
+                      style={{ backgroundImage: `url(${item.imageSrc})` }}
+                    >
+                      <IonCardHeader className="overlay-header">
+                        <IonCardTitle>{item.title}</IonCardTitle>
+                      </IonCardHeader>
+                    </div>
+                    <audio
+                      ref={audioRefs[item.id as keyof typeof audioRefs]}
+                      src={item.audioSrc}
+                      preload="none"
+                    />
+                  </IonCard>
+                </div>
               </div>
             ))}
 
