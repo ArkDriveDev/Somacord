@@ -121,6 +121,7 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
     const [isRepeat, setIsRepeat] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isShuffle, setIsShuffle] = useState(false);
+    const isProgrammaticScroll = useRef(false);
 
     // In Musics.tsx
     React.useImperativeHandle(ref, () => ({
@@ -313,9 +314,10 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
           }
         });
 
+        // Bonus: Only update if changed
         if (closestCardId !== centeredCard) {
-          // Pause currently playing audio if any
-          if (currentPlayingId) {
+          // 🔵 Only pause if user scrolled manually
+          if (!isProgrammaticScroll.current && currentPlayingId) {
             const currentAudio = audioRefs[currentPlayingId as keyof typeof audioRefs].current;
             if (currentAudio) {
               currentAudio.pause();
@@ -325,7 +327,6 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
             }
           }
 
-          // Update centered card
           setCenteredCard(closestCardId);
         }
       });
@@ -394,7 +395,7 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
       const card = container.querySelector(`.music-card[data-id="${id}"]`);
       if (!card) return;
 
-      // Pause currently playing audio if any
+      // Pause current audio
       if (currentPlayingId) {
         const currentAudio = audioRefs[currentPlayingId as keyof typeof audioRefs].current;
         if (currentAudio) {
@@ -405,17 +406,31 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
         }
       }
 
-
+      // Scroll to center
       const containerWidth = container.offsetWidth;
       const cardRect = card.getBoundingClientRect();
       const cardLeft = cardRect.left + container.scrollLeft;
       const cardWidth = cardRect.width;
       const scrollTo = cardLeft - (containerWidth / 2) + (cardWidth / 2);
 
+      isProgrammaticScroll.current = true;
+
       container.scrollTo({
         left: scrollTo,
-        behavior: 'smooth'
+        behavior: 'smooth',
       });
+
+      // ⏳ Now use a scroll event to detect when it settles
+      let scrollStopTimeout: NodeJS.Timeout;
+      const onScrollStop = () => {
+        clearTimeout(scrollStopTimeout);
+        scrollStopTimeout = setTimeout(() => {
+          isProgrammaticScroll.current = false;
+          container.removeEventListener('scroll', onScrollStop);
+        }, 300); // no scroll activity for 300ms = done
+      };
+
+      container.addEventListener('scroll', onScrollStop);
 
       setCenteredCard(id);
     };
@@ -441,27 +456,34 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
     };
 
     const handleNext = () => {
-      if (!currentPlayingId || !centeredCard) return;
+      if (!centeredCard) return;
 
       if (isShuffle) {
-        // 🔀 SHUFFLE MODE: Pick a random track
-        const availableIds = filteredMusicItems.map(item => item.id).filter(id => id !== currentPlayingId);
+        const availableIds = filteredMusicItems
+          .map(item => item.id)
+          .filter(id => id !== centeredCard);
+
+        if (availableIds.length === 0) return;
+
         const randomId = availableIds[Math.floor(Math.random() * availableIds.length)];
 
         handleCardClick(randomId);
+
+        // Defer playback to handlePlayPause (which also triggers onPlayRequest)
         setTimeout(() => {
           handlePlayPause(randomId);
         }, 300);
+
         return;
       }
 
-      // 🔁 NORMAL NEXT MODE
+      // 🔁 Normal Next
       const currentIndex = filteredMusicItems.findIndex(item => item.id === centeredCard);
       if (currentIndex < filteredMusicItems.length - 1) {
         const nextId = filteredMusicItems[currentIndex + 1].id;
         handleCardClick(nextId);
         setTimeout(() => {
-          handlePlayPause(nextId);
+          handlePlayPause(nextId); // ✅ keep using this
         }, 300);
       }
     };
@@ -541,12 +563,11 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
             />
             <div className="player-controls">
               <MusicShuffleButton
-  onRestart={handleRestart}
-  isShuffle={isShuffle}
-  onToggleShuffle={() => setIsShuffle(prev => !prev)}
-  disabled={isRepeat}
-/>
-
+                onRestart={handleRestart}
+                isShuffle={isShuffle}
+                onToggleShuffle={() => setIsShuffle(prev => !prev)}
+                disabled={isRepeat}
+              />
 
               <MusicPrevious
                 onClick={handlePrevious}
@@ -567,8 +588,16 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
               />
               <MusicRepeatToggle
                 isRepeat={isRepeat}
-                onToggle={() => setIsRepeat(!isRepeat)}
+                onToggle={() => {
+                  setIsRepeat(!isRepeat);
+
+                  // 🔧 Untoggle shuffle if repeat is turned ON
+                  if (!isRepeat) {
+                    setIsShuffle(false);
+                  }
+                }}
               />
+
             </div>
           </div>
         </IonCard>
