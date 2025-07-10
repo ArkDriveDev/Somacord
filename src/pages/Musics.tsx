@@ -120,7 +120,7 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
     const [filteredMusicItems, setFilteredMusicItems] = useState<MusicItem[]>(musicItems);
     const [isRepeat, setIsRepeat] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-
+    const [isShuffle, setIsShuffle] = useState(false);
 
     // In Musics.tsx
     React.useImperativeHandle(ref, () => ({
