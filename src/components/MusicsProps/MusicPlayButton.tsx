@@ -15,7 +15,7 @@ const MusicPlayButton: React.FC<MusicPlayButtonProps> = ({
   return (
     <IonButton 
       onClick={onPlayPause} 
-      color="primary" 
+      color="medium" 
       shape="round"
       disabled={disabled}  // Add this
     >

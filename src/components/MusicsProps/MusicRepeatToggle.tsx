@@ -9,7 +9,7 @@ interface MusicRepeatToggleProps {
 const MusicRepeatToggle: React.FC<MusicRepeatToggleProps> = ({ isRepeat, onToggle }) => {
   return (
     <IonButton 
-      color={isRepeat ? "danger" : "tertiary"} 
+      color={isRepeat ? "primary" : "medium"} 
       shape="round"
       onClick={onToggle}
     >

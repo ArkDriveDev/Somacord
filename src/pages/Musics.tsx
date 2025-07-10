@@ -542,25 +542,28 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
         {/* Player Card */}
         <IonCard className="music-player-card">
           <div className="ion-padding">
-            <SpectrumBars
-              barCount={30}
-              isPlaying={isPlaying}
-              audioElement={
-                currentPlayingId ?
-                  audioRefs[currentPlayingId as keyof typeof audioRefs].current :
-                  null
-              }
-            />
-            <MusicSpectrum
-              progress={currentProgress}
-              onSeek={(newProgress) => {
-                const audio = currentPlayingId ? audioRefs[currentPlayingId as keyof typeof audioRefs].current : null;
-                if (audio) {
-                  audio.currentTime = (newProgress / 100) * audio.duration;
+            <div style={{ marginBottom: '10px' }}>
+              <SpectrumBars
+                barCount={30}
+                isPlaying={isPlaying}
+                audioElement={
+                  currentPlayingId ? audioRefs[currentPlayingId as keyof typeof audioRefs].current : null
                 }
-              }}
-              disabled={!currentPlayingId}
-            />
+              />
+            </div>
+
+            <div style={{ marginTop: '-20px' }}>
+              <MusicSpectrum
+                progress={currentProgress}
+                onSeek={(newProgress) => {
+                  const audio = currentPlayingId ? audioRefs[currentPlayingId as keyof typeof audioRefs].current : null;
+                  if (audio) {
+                    audio.currentTime = (newProgress / 100) * audio.duration;
+                  }
+                }}
+                disabled={!currentPlayingId}
+              />
+            </div>
             <div className="player-controls">
               <MusicShuffleButton
                 onRestart={handleRestart}

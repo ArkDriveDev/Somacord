@@ -9,7 +9,7 @@ interface MusicPreviousProps {
 const MusicPrevious: React.FC<MusicPreviousProps> = ({ onClick, disabled }) => {
   return (
     <IonButton 
-      color="secondary" 
+      color="medium" 
       shape="round" 
       onClick={onClick}
       disabled={disabled}

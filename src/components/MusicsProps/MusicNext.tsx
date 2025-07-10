@@ -9,7 +9,7 @@ interface MusicNextProps {
 const MusicNext: React.FC<MusicNextProps> = ({ onClick, disabled }) => {
   return (
     <IonButton 
-      color="secondary" 
+      color="medium" 
       shape="round" 
       onClick={onClick}
       disabled={disabled}

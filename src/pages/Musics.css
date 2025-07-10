@@ -56,8 +56,8 @@
 .music-card.snap-center {
   opacity: 1;
   transform: scale(1);
-  box-shadow: 0 0 20px 5px rgba(0, 212, 255, 0.5);
-  border: 2px solid var(--ion-color-primary, #00d4ff);
+  box-shadow: 0 0 20px 1px rgba(124, 76, 143, 0.5);
+  border: 2px solid var(--ion-color-primary, #b9e9f3);
   z-index: 2;
 }
 
@@ -92,13 +92,11 @@
 /* Music Player Card */
 .music-player-card {
   max-width: 90%;
-  margin: 0 auto;
-  margin-top: 1%;
-  margin-bottom: 2%;
-  border-radius: 16px;
-  padding: 8px;
-  background: linear-gradient(145deg, #2d2d42, #1e1e2d);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  margin: 1% auto 2%;
+  border: none !important; /* Ensures no border */
+  padding: 0;
+  background: transparent;
+  box-shadow: none; /* Optional: removes any shadow if present */
 }
 
 /* Player Controls */

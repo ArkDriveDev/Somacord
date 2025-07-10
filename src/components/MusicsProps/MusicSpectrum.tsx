@@ -43,7 +43,7 @@ const MusicSpectrum: React.FC<MusicSpectrumProps> = ({
         style={{
           height: '100%',
           width: `${progress}%`,
-          backgroundColor: '#ffc107',
+          backgroundColor: '#E0FFFF',
           borderRadius: '5px 0 0 5px',
           transition: 'width 0.1s linear',
         }}
@@ -58,9 +58,9 @@ const MusicSpectrum: React.FC<MusicSpectrumProps> = ({
             width: '14px',
             height: '14px',
             backgroundColor: 'white',
-            border: '2px solid #ffc107',
+            border: '2px solid #E0FFFF',
             borderRadius: '50%',
-            boxShadow: '0 0 4px #ffc107',
+            boxShadow: '0 0 4px #E0FFFF',
           }}
         ></div>
       )}
