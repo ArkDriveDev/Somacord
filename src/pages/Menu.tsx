@@ -7,8 +7,8 @@ import { prismOutline, cubeOutline, micCircleOutline } from 'ionicons/icons';
 import { Route, Redirect } from 'react-router-dom';
 import Hologram from './Hologram';
 import Models from './Models';
-import floating from '../Assets/Tone.png';
 import VoiceCommands from './VoiceCommands';
+import floating from '../Assets/Tone.png';
 
 const Menu: React.FC = () => {
   const glow = {
@@ -24,7 +24,7 @@ const Menu: React.FC = () => {
   const menuItems = [
     { name: 'Hologram', url: '/hologram', icon: prismOutline },
     { name: 'Models', url: '/models', icon: cubeOutline },
-    { name: 'Voice Commands', url: '/voicecommands', icon: micCircleOutline},
+    { name: 'Voice Commands', url: '/voicecommands', icon: micCircleOutline },
   ];
 
   const h1Style = { ...glow, color: 'skyblue' };
@@ -37,8 +37,8 @@ const Menu: React.FC = () => {
           .fancy-title-container {
             display: flex;
             align-items: center;
-            gap: 0px;
-            margin-left: -30px; /* Move title closer to menu button */
+            gap: 4px;
+            margin-left: -20px;
           }
 
           .tone-icon {
@@ -56,6 +56,18 @@ const Menu: React.FC = () => {
             text-shadow: 0 0 4px pink;
             animation: blink 2s infinite;
             line-height: 1;
+          }
+
+          .disclaimer-container {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #aaa;
+            padding: 10px 14px;
+            line-height: 1.4;
           }
 
           @keyframes float {
@@ -77,7 +89,7 @@ const Menu: React.FC = () => {
             <IonTitle style={h1Style}>Menu</IonTitle>
           </IonToolbar>
         </IonHeader>
-        <IonContent>
+        <IonContent className="ion-no-padding">
           {menuItems.map((item, index) => (
             <IonMenuToggle key={index} autoHide={false}>
               <IonItem
@@ -94,6 +106,13 @@ const Menu: React.FC = () => {
               </IonItem>
             </IonMenuToggle>
           ))}
+
+          {/* Disclaimer fixed at the bottom of the menu */}
+          <div className="disclaimer-container">
+            <p>
+              All assets used in this project are owned by <strong>Digital Extremes</strong>. This is a fan-made, unofficial project and is not affiliated with or endorsed by Digital Extremes. Content is used under <strong>Fair Use</strong>.
+            </p>
+          </div>
         </IonContent>
       </IonMenu>
 
