@@ -440,25 +440,32 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
       }
     };
 
-    const handleNext = () => {
-      if (!currentPlayingId || !centeredCard) return;
+   const handleNext = () => {
+  if (!currentPlayingId || !centeredCard) return;
 
-      // Find the index of the currently playing song
-      const currentIndex = filteredMusicItems.findIndex(item => item.id === centeredCard);
+  if (isShuffle) {
+    // 🔀 SHUFFLE MODE: Pick a random track
+    const availableIds = filteredMusicItems.map(item => item.id).filter(id => id !== currentPlayingId);
+    const randomId = availableIds[Math.floor(Math.random() * availableIds.length)];
 
-      // If there's a next song in the array
-      if (currentIndex < filteredMusicItems.length - 1) {
-        const nextId = filteredMusicItems[currentIndex + 1].id;
+    handleCardClick(randomId);
+    setTimeout(() => {
+      handlePlayPause(randomId);
+    }, 300);
+    return;
+  }
 
-        // Scroll to the next card
-        handleCardClick(nextId);
+  // 🔁 NORMAL NEXT MODE
+  const currentIndex = filteredMusicItems.findIndex(item => item.id === centeredCard);
+  if (currentIndex < filteredMusicItems.length - 1) {
+    const nextId = filteredMusicItems[currentIndex + 1].id;
+    handleCardClick(nextId);
+    setTimeout(() => {
+      handlePlayPause(nextId);
+    }, 300);
+  }
+};
 
-        // Play the next song after a small delay to allow scrolling to complete
-        setTimeout(() => {
-          handlePlayPause(nextId);
-        }, 300);
-      }
-    };
 
     return (
       <IonContent fullscreen>
