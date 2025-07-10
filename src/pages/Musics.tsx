@@ -440,32 +440,31 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
       }
     };
 
-   const handleNext = () => {
-  if (!currentPlayingId || !centeredCard) return;
+    const handleNext = () => {
+      if (!currentPlayingId || !centeredCard) return;
 
-  if (isShuffle) {
-    // 🔀 SHUFFLE MODE: Pick a random track
-    const availableIds = filteredMusicItems.map(item => item.id).filter(id => id !== currentPlayingId);
-    const randomId = availableIds[Math.floor(Math.random() * availableIds.length)];
+      if (isShuffle) {
+        // 🔀 SHUFFLE MODE: Pick a random track
+        const availableIds = filteredMusicItems.map(item => item.id).filter(id => id !== currentPlayingId);
+        const randomId = availableIds[Math.floor(Math.random() * availableIds.length)];
 
-    handleCardClick(randomId);
-    setTimeout(() => {
-      handlePlayPause(randomId);
-    }, 300);
-    return;
-  }
+        handleCardClick(randomId);
+        setTimeout(() => {
+          handlePlayPause(randomId);
+        }, 300);
+        return;
+      }
 
-  // 🔁 NORMAL NEXT MODE
-  const currentIndex = filteredMusicItems.findIndex(item => item.id === centeredCard);
-  if (currentIndex < filteredMusicItems.length - 1) {
-    const nextId = filteredMusicItems[currentIndex + 1].id;
-    handleCardClick(nextId);
-    setTimeout(() => {
-      handlePlayPause(nextId);
-    }, 300);
-  }
-};
-
+      // 🔁 NORMAL NEXT MODE
+      const currentIndex = filteredMusicItems.findIndex(item => item.id === centeredCard);
+      if (currentIndex < filteredMusicItems.length - 1) {
+        const nextId = filteredMusicItems[currentIndex + 1].id;
+        handleCardClick(nextId);
+        setTimeout(() => {
+          handlePlayPause(nextId);
+        }, 300);
+      }
+    };
 
     return (
       <IonContent fullscreen>
@@ -542,9 +541,13 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
             />
             <div className="player-controls">
               <MusicShuffleButton
-                onRestart={handleRestart}
-                disabled={!currentPlayingId}
-              />
+  onRestart={handleRestart}
+  isShuffle={isShuffle}
+  onToggleShuffle={() => setIsShuffle(prev => !prev)}
+  disabled={isRepeat}
+/>
+
+
               <MusicPrevious
                 onClick={handlePrevious}
                 disabled={!currentPlayingId || !centeredCard || filteredMusicItems.findIndex(item => item.id === centeredCard) <= 0}
