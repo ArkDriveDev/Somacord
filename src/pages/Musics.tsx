@@ -120,30 +120,36 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
     const [filteredMusicItems, setFilteredMusicItems] = useState<MusicItem[]>(musicItems);
     const [isRepeat, setIsRepeat] = useState(false);
 
+    // In Musics.tsx
     React.useImperativeHandle(ref, () => ({
       pause: () => {
-        // existing pause implementation
+        if (currentPlayingId) {
+          audioRefs[currentPlayingId as keyof typeof audioRefs].current?.pause();
+          setIsPlaying(false);
+          onPlayStateChange?.(false);
+        }
       },
       playTrack: (id: number) => {
-        console.log("playTrack called with ID:", id); // ✅ LOG HERE
-        handlePlayPause(id);
+        const track = musicItems.find(item => item.id === id);
+        if (track) {
+          handleSearch(track.title);
+          setTimeout(() => handlePlayPause(id), 500);
+        }
       },
       searchTrack: (title: string) => {
-        console.log("searchTrack called with title:", title);
-        handleSearch(title);
-
-        // Attempt to find the matching item and play it
-        const match = musicItems.find(item =>
-          item.title.toLowerCase() === title.toLowerCase()
+        const filtered = musicItems.filter(item =>
+          item.title.toLowerCase().includes(title.toLowerCase())
         );
+        setFilteredMusicItems(filtered);
 
-        if (match) {
-          console.log("Auto-playing track:", match.title);
-          setTimeout(() => handlePlayPause(match.id), 500); // delay to let scroll finish
-        } else {
-          console.warn("Track not found:", title);
+        if (filtered.length > 0) {
+          const firstMatch = filtered[0];
+          handleCardClick(firstMatch.id);
+          return firstMatch; // Return the found track
         }
-      }
+        return null;
+      },
+      getMusicItems: () => musicItems // Add this new method
     }));
 
     const handleRestart = () => {
@@ -203,6 +209,11 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
       if (!audioRef) return;
 
       try {
+        // 👇 NEW: Request mic toggle (e.g., disable it before playing)
+        if (!isPlaying && onPlayRequest) {
+          onPlayRequest();
+        }
+
         if (currentPlayingId === id) {
           if (isPlaying) {
             await audioRef.pause();
@@ -216,11 +227,10 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
             const currentAudio = audioRefs[currentPlayingId as keyof typeof audioRefs].current;
             if (currentAudio) {
               await currentAudio.pause();
-              currentAudio.currentTime = 0; // Reset position if switching tracks
+              currentAudio.currentTime = 0;
             }
           }
 
-          // Play new audio
           audioRef.currentTime = 0;
           await audioRef.play();
           setCurrentPlayingId(id);
