@@ -3,11 +3,12 @@ import {
   IonMenu, IonMenuButton, IonMenuToggle, IonPage,
   IonTitle, IonToolbar, IonRouterOutlet
 } from '@ionic/react';
-import { prismOutline, cubeOutline } from 'ionicons/icons';
+import { prismOutline, cubeOutline, micCircleOutline } from 'ionicons/icons';
 import { Route, Redirect } from 'react-router-dom';
 import Hologram from './Hologram';
 import Models from './Models';
 import floating from '../Assets/Tone.png';
+import VoiceCommands from './VoiceCommands';
 
 const Menu: React.FC = () => {
   const glow = {
@@ -23,6 +24,7 @@ const Menu: React.FC = () => {
   const menuItems = [
     { name: 'Hologram', url: '/hologram', icon: prismOutline },
     { name: 'Models', url: '/models', icon: cubeOutline },
+    { name: 'Voice Commands', url: '/voicecommands', icon: micCircleOutline},
   ];
 
   const h1Style = { ...glow, color: 'skyblue' };
@@ -114,6 +116,7 @@ const Menu: React.FC = () => {
           <Route exact path="/" render={() => <Redirect to="/models" />} />
           <Route exact path="/hologram" component={Hologram} />
           <Route exact path="/models" component={Models} />
+          <Route exact path="/voicecommands" component={VoiceCommands} />
         </IonRouterOutlet>
       </IonPage>
     </>
