@@ -18,6 +18,7 @@ import { fetchAvailableModels } from '../services/ModelsService';
 import Musics, { MusicPlayerHandle } from './Musics';
 import SudaDefault from '../Assets/Suda/Suda.png';
 import SudaResponse from '../Assets/Suda/suda.gif';
+import micimage from '../Assets/Suda/Suda1.png';
 
 
 interface HologramModel {
@@ -421,12 +422,13 @@ const Hologram: React.FC = () => {
 
       <IonContent fullscreen className="hologram-container">
         <button
-          onClick={toggleMic}
-          className={`mic-toggle-button ${micEnabled ? 'active' : ''}`}
-          title={micEnabled ? "Turn off microphone" : "Turn on microphone"}
-        >
-          <IonIcon icon={micEnabled ? micOutline : micOffOutline} />
-        </button>
+  onClick={toggleMic}
+  className={`mic-toggle-button ${micEnabled ? 'active' : ''}`}
+  title={micEnabled ? "Turn off microphone" : "Turn on microphone"}
+>
+  <img src={micimage} alt="Mic Toggle" />
+</button>
+
 
         <div className={`hologram-center ${isResponding &&
           (selectedModel.id === SUDA_MODEL.id || selectedModel.id === SUDA_RESPONSE_MODEL.id)
