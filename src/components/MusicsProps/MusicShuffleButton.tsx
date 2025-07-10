@@ -1,20 +1,27 @@
 import { IonButton, IonIcon } from '@ionic/react';
 import { refresh, shuffleOutline } from 'ionicons/icons';
 
-interface MusicShuffleButton {
+interface MusicShuffleButtonProps {
   onRestart: () => void;
+  onShuffle: () => void;
+  isShuffle: boolean;
   disabled?: boolean;
 }
 
-const MusicShuffleButton: React.FC<MusicShuffleButton> = ({ onRestart, disabled = false }) => {
+const MusicShuffleButton: React.FC<MusicShuffleButtonProps> = ({
+  onRestart,
+  onShuffle,
+  isShuffle,
+  disabled = false
+}) => {
   return (
-    <IonButton 
-      color="medium" 
+    <IonButton
+      color="medium"
       shape="round"
-      onClick={onRestart}
+      onClick={isShuffle ? onShuffle : onRestart}
       disabled={disabled}
     >
-      <IonIcon icon={shuffleOutline} />
+      <IonIcon icon={isShuffle ? shuffleOutline : refresh} />
     </IonButton>
   );
 };
