@@ -30,11 +30,11 @@ import MusicImage3 from '../Assets/Techrot Encore.jpg'
 import ModelSearch from '../components/ModelsProps/ModelSearch';
 import MusicPlayButton from '../components/MusicsProps/MusicPlayButton';
 import MusicSpectrum from '../components/MusicsProps/MusicSpectrum';
-import MusicRestartButton from '../components/MusicsProps/MusicRestartButton';
 import MusicPrevious from '../components/MusicsProps/MusicPrevious';
 import MusicNext from '../components/MusicsProps/MusicNext';
 import MusicRepeatToggle from '../components/MusicsProps/MusicRepeatToggle';
 import SpectrumBars from '../components/MusicsProps/SpectrumBars';
+import MusicShuffleButton from '../components/MusicsProps/MusicShuffleButton';
 
 interface MusicItem {
   id: number;
@@ -534,7 +534,7 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
               disabled={!currentPlayingId}
             />
             <div className="player-controls">
-              <MusicRestartButton
+              <MusicShuffleButton
                 onRestart={handleRestart}
                 disabled={!currentPlayingId}
               />
