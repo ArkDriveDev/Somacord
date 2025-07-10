@@ -119,6 +119,8 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
     const [currentProgress, setCurrentProgress] = useState(0);
     const [filteredMusicItems, setFilteredMusicItems] = useState<MusicItem[]>(musicItems);
     const [isRepeat, setIsRepeat] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
 
     // In Musics.tsx
     React.useImperativeHandle(ref, () => ({
@@ -137,20 +139,23 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
         }
       },
       searchTrack: (title: string) => {
-        const filtered = musicItems.filter(item =>
+        handleSearch(title, true); // true = skip filtering
+        setSearchQuery(title); // Just update the UI
+        const match = musicItems.find(item =>
           item.title.toLowerCase().includes(title.toLowerCase())
         );
-        setFilteredMusicItems(filtered);
 
-        if (filtered.length > 0) {
-          const firstMatch = filtered[0];
-          handleCardClick(firstMatch.id);
-          return firstMatch; // Return the found track
+        if (match) {
+          handleCardClick(match.id); // Only scroll
+          return match;
         }
         return null;
-      },
-      getMusicItems: () => musicItems // Add this new method
+      }
     }));
+
+    useEffect(() => {
+      setFilteredMusicItems(musicItems);
+    }, []);
 
     const handleRestart = () => {
       if (currentPlayingId) {
@@ -330,30 +335,21 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
     }, [centeredCard, currentPlayingId]);
 
     // Search functionality
-    const handleSearch = (query: string) => {
-      const filtered = musicItems.filter(item =>
+    const handleSearch = (query: string, skipFiltering = false) => {
+      setSearchQuery(query); // Update the search bar text
+
+      // Always search through all music items, not just filtered ones
+      const match = musicItems.find(item =>
         item.title.toLowerCase().includes(query.toLowerCase())
       );
-      setFilteredMusicItems(filtered);
 
-      // Update centered card to the first item in filtered results (if any)
-      const newCenteredCard = filtered.length > 0 ? filtered[0].id : null;
-      setCenteredCard(newCenteredCard);
-
-      // If current playing song is not in filtered results, stop playback
-      if (currentPlayingId && !filtered.some(item => item.id === currentPlayingId)) {
-        audioRefs[currentPlayingId as keyof typeof audioRefs].current?.pause();
-        setCurrentPlayingId(null);
-        setIsPlaying(false);
-        setCurrentProgress(0);
-        onPlayStateChange?.(false);
+      if (match) {
+        handleCardClick(match.id); // Scroll to the matched card
       }
 
-      // If there are filtered results, scroll to the first one
-      if (filtered.length > 0 && containerRef.current) {
-        setTimeout(() => {
-          handleCardClick(filtered[0].id);
-        }, 100);
+      // Reset filtered items to show all (in case previous search had filtered them)
+      if (filteredMusicItems.length !== musicItems.length) {
+        setFilteredMusicItems(musicItems);
       }
     };
 
