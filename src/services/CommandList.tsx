@@ -161,10 +161,11 @@ export const CommandList = async (command: string): Promise<{
 
   // 3. Handle hello/greeting commands
   const greetings = [
-    'hello suda',
-    'hi suda',
-    'hey suda',
-    'greetings suda',
+    'sudha',
+    'hello, sudha',
+    'hi, sudha',
+    'hey sudha',
+    'greetings sudha',
     'hello cephalon',
     'hi cephalon'
   ];

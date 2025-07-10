@@ -199,48 +199,36 @@ const Musics = forwardRef<MusicPlayerHandle, MusicsProps>(
     }, [currentPlayingId]);
 
     const handlePlayPause = async (id: number) => {
-      console.log("handlePlayPause triggered for ID:", id);
-      // Don't allow playback if mic is active
-      if (isMicActive && onPlayRequest) {
-        console.log("Mic is active. Cancelling play and requesting toggle.");
-        onPlayRequest();
-        return;
-      }
-
       const audioRef = audioRefs[id as keyof typeof audioRefs].current;
       if (!audioRef) return;
 
       try {
         if (currentPlayingId === id) {
-          // Toggle current track
           if (isPlaying) {
             await audioRef.pause();
           } else {
             await audioRef.play();
           }
           setIsPlaying(!isPlaying);
-          onPlayStateChange?.(!isPlaying);
         } else {
-          // Switch to new track
+          // Pause currently playing audio if any
           if (currentPlayingId) {
             const currentAudio = audioRefs[currentPlayingId as keyof typeof audioRefs].current;
-            currentAudio?.pause();
+            if (currentAudio) {
+              await currentAudio.pause();
+              currentAudio.currentTime = 0; // Reset position if switching tracks
+            }
           }
 
+          // Play new audio
           audioRef.currentTime = 0;
           await audioRef.play();
           setCurrentPlayingId(id);
           setIsPlaying(true);
-          onPlayStateChange?.(true);
-
-          if (centeredCard !== id) {
-            handleCardClick(id);
-          }
         }
       } catch (error) {
-        console.error("Playback error:", error);
+        console.error("Playback failed:", error);
         setIsPlaying(false);
-        onPlayStateChange?.(false);
       }
     };
 

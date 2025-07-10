@@ -349,10 +349,7 @@ const Hologram: React.FC = () => {
         await handleModelChange(result.model);
       }
       else if (result.action === 'hello') {
-        // Greeting handled, auto-reset after timeout
-        responseTimeoutRef.current = setTimeout(() => {
-          setIsResponding(false);
-        }, 2000);
+        await playHelloSound();
       }
       else if (result.action === 'playMusic') {
         if (micEnabled) {
