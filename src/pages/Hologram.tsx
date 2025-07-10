@@ -17,7 +17,7 @@ import success from '../Assets/Responses/Launch.wav';
 import { fetchAvailableModels } from '../services/ModelsService';
 import Musics, { MusicPlayerHandle } from './Musics';
 import SudaDefault from '../Assets/Suda/Suda.png';
-import SudaResponse from '../Assets/Suda/Suda1.png';
+import SudaResponse from '../Assets/Suda/suda.gif';
 
 
 interface HologramModel {
