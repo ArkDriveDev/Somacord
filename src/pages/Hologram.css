@@ -289,3 +289,15 @@ ion-content.hologram-container {
   background-color: #2a2a2a;
   transform: translateY(-3px);
 }
+@keyframes spin360 {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.suda-spin {
+  animation: spin360 4s linear infinite;
+}

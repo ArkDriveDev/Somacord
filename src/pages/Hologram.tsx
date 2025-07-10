@@ -447,7 +447,9 @@ const Hologram: React.FC = () => {
                   <img
                     src={selectedModel.src}
                     alt={`${position} Reflection`}
-                    className={selectedModel.name === 'Suda' ? 'suda-glow-animation' : ''}
+                    className={`
+    ${selectedModel.name === 'Suda' ? 'suda-glow-animation suda-spin' : ''}
+  `}
                     onLoad={() => {
                       if (
                         selectedModel.id === SUDA_MODEL.id ||
@@ -460,6 +462,7 @@ const Hologram: React.FC = () => {
                     }}
                     onError={(e) => (e.currentTarget.src = DEFAULT_MODEL.src)}
                   />
+
                 </div>
               </div>
             ))}
