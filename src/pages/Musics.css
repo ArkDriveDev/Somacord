@@ -1,0 +1,202 @@
+/* MAIN CONTAINER */
+.music-container {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  touch-action: pan-x;
+  padding: 20px 0;
+  cursor: grab;
+  position: relative;
+}
+
+.music-container.grabbing {
+  cursor: grabbing;
+}
+
+.music-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* ROW of Cards */
+.music-scroll-row {
+  display: flex;
+  gap: 16px;
+  padding: 0 calc(50vw - 40%);
+}
+
+/* Card Wrapper */
+.music-col {
+  scroll-snap-align: center;
+  flex: 0 0 auto;
+  width: 80vw;
+}
+
+/* Music Card */
+.music-card {
+  width: 100%;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+  transform: scale(0.95);
+  background-color: #000; /* fallback */
+}
+
+/* Centered Card - Glow Effect */
+.music-card.snap-center {
+  opacity: 1;
+  transform: scale(1);
+  box-shadow: 0 0 20px 1px rgba(124, 76, 143, 0.5);
+  border: 2px solid var(--ion-color-primary, #b9e9f3);
+  z-index: 2;
+}
+
+/* Background Image inside Card */
+.music-image-bg {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* Overlay for the title */
+.overlay-header {
+  background: rgba(0, 0, 0, 0.6);
+  padding: 12px;
+  text-align: center;
+}
+
+.overlay-header ion-card-title {
+  color: #fff;
+  font-size: 1rem;
+  text-shadow: 0 0 5px #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Music Player Card */
+.music-player-card {
+  max-width: 90%;
+  margin: 1% auto 2%;
+  border: none !important; /* Ensures no border */
+  padding: 0;
+  background: transparent;
+  box-shadow: none; /* Optional: removes any shadow if present */
+}
+
+/* Player Controls */
+.player-controls {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px;
+}
+
+/* Smaller buttons */
+.player-controls ion-button {
+  --padding-start: 6px;
+  --padding-end: 6px;
+}
+
+/* Responsive Adjustments */
+@media (min-width: 768px) {
+  .music-col {
+    width: 60vw;
+  }
+
+  .music-scroll-row {
+    padding: 0 calc(50vw - 30%);
+  }
+}
+
+@media (min-width: 1024px) {
+  .music-col {
+    width: 40vw;
+  }
+
+  .music-scroll-row {
+    padding: 0 calc(50vw - 20%);
+  }
+}
+/* Wrapper to center on the card */
+/* Container */
+.volume-toggle-wrapper {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column-reverse; /* 👈 Reversed column to make slider appear above */
+  align-items: center;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+/* Button styling */
+.volume-button {
+  --padding-start: 6px;
+  --padding-end: 6px;
+  --border-radius: 50%;
+}
+
+/* Slider appears above the icon */
+.volume-slider {
+  width: 100px;
+  margin-bottom: 6px;
+  appearance: none;
+  height: 4px;
+  background: #ffffff; /* Track color */
+  border-radius: 2px;
+  outline: none;
+}
+
+/* WebKit: Chrome, Safari, Brave */
+.volume-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  background: #cf7ef0; /* Track color */
+  border-radius: 2px;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #e1abf1; /* Thumb color */
+  cursor: pointer;
+  margin-top: -5px;
+  border: none;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.6); /* Optional glow */
+}
+
+/* Firefox */
+.volume-slider::-moz-range-track {
+  background: #c772e0;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.volume-slider::-moz-range-thumb {
+  background: #530566;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.6); /* Optional glow */
+}
