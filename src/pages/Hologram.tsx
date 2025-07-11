@@ -350,9 +350,6 @@ const Hologram: React.FC = () => {
       if (result.action === 'changeModel' && result.model) {
         await handleModelChange(result.model);
       }
-      else if (result.action === 'hello') {
-        await playHelloSound();
-      }
       else if (result.action === 'playMusic') {
         if (micEnabled) {
           toggleMic(); // turn off mic
