@@ -168,7 +168,7 @@
 /* WebKit: Chrome, Safari, Brave */
 .volume-slider::-webkit-slider-runnable-track {
   height: 4px;
-  background: #ffffff; /* Track color */
+  background: #cf7ef0; /* Track color */
   border-radius: 2px;
 }
 
@@ -177,7 +177,7 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #ffffff; /* Thumb color */
+  background: #e1abf1; /* Thumb color */
   cursor: pointer;
   margin-top: -5px;
   border: none;
@@ -186,13 +186,13 @@
 
 /* Firefox */
 .volume-slider::-moz-range-track {
-  background: #ffffff;
+  background: #c772e0;
   height: 4px;
   border-radius: 2px;
 }
 
 .volume-slider::-moz-range-thumb {
-  background: #ffffff;
+  background: #530566;
   width: 14px;
   height: 14px;
   border-radius: 50%;

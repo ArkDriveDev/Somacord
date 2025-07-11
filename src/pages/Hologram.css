@@ -38,8 +38,8 @@ ion-content.hologram-container {
 /* Image Containers */
 .reflection-image {
   position: absolute;
-  width: 30%;
-  height: 30%;
+  width: 25%;
+  height: 25%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -173,8 +173,8 @@ ion-content.hologram-container {
   }
 
   .reflection-image {
-    width: 30%;
-    height: 30%;
+    width: 25%;
+    height: 25%;
   }
 
   .reflection-image.top {
