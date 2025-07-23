@@ -108,6 +108,16 @@ const Hologram: React.FC = () => {
   const [fadeClass, setFadeClass] = useState('');
   const [isTransitioning, setIsTransitioning] = useState(true);
 
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsTransitioning(false);
+    }, 1500); // Matches CSS animation duration
+
+    return () => clearTimeout(timer);
+  }, []);
+
+
   // Initialize model from route or localStorage
   useEffect(() => {
     const initializeModel = () => {
