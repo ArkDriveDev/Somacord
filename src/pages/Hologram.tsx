@@ -394,7 +394,7 @@ const Hologram: React.FC = () => {
   };
 
   return (
-    <IonPage style={{ backgroundColor: 'black' }}>
+    <IonPage style={{ backgroundColor: 'black' }} className={initialFade}>
       <IonHeader>
         <IonToolbar>
           <IonTitle>{selectedModel.name}</IonTitle>
