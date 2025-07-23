@@ -1,7 +1,6 @@
 import {
   IonContent, IonPage, IonHeader, IonToolbar,
   IonTitle, useIonViewWillEnter, useIonViewWillLeave,
-  useIonViewDidEnter
 } from '@ionic/react';
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -107,7 +106,7 @@ const Hologram: React.FC = () => {
   const responseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const modelChangeTimeout = useRef<NodeJS.Timeout | null>(null);
   const [fadeClass, setFadeClass] = useState('');
-  const [initialFade, setInitialFade] = useState('fade-in-initial');
+  const [isTransitioning, setIsTransitioning] = useState(true);
 
   // Initialize model from route or localStorage
   useEffect(() => {
@@ -373,15 +372,6 @@ const Hologram: React.FC = () => {
     setMicEnabled(false);
     clearTimeout(responseTimeoutRef.current as NodeJS.Timeout);
     clearTimeout(modelChangeTimeout.current as NodeJS.Timeout);
-  });
-
-  useIonViewDidEnter(() => {
-    // This will remove the initial fade class after the animation completes
-    const timer = setTimeout(() => {
-      setInitialFade('');
-    }, 1000); // Match this duration with your CSS animation duration
-
-    return () => clearTimeout(timer);
   });
 
   const handleReverseClick = async () => {
