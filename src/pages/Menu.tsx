@@ -132,7 +132,7 @@ const Menu: React.FC = () => {
         </IonHeader>
 
         <IonRouterOutlet>
-          <Route exact path="/" render={() => <Redirect to="/models" />} />
+          <Route exact path="/" render={() => <Redirect to="/hologram" />} />
           <Route exact path="/hologram" component={Hologram} />
           <Route exact path="/models" component={Models} />
           <Route exact path="/voicecommands" component={VoiceCommands} />
