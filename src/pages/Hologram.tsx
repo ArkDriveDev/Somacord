@@ -21,7 +21,6 @@ import SudaResponse from '../Assets/Suda/suda.gif';
 import micimage from '../Assets/Suda/Suda1.png';
 import floating from '../Assets/Tone.png';
 
-
 interface HologramModel {
   id: number;
   name: string;
@@ -82,7 +81,7 @@ const playAudio = (name: string): Promise<void> => {
     audio.addEventListener('error', finish);
     audio.play().catch((err) => {
       console.error(`Playback error for ${name}:`, err);
-      resolve(); // fallback
+      resolve();
     });
   });
 };
@@ -102,33 +101,66 @@ const Hologram: React.FC = () => {
   const [showMusicPlayer, setShowMusicPlayer] = useState(false);
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   const musicPlayerRef = useRef<MusicPlayerHandle>(null);
-  const [currentModel, setCurrentModel] = useState<ImageData | null>(null);
-
+  const [currentModel, setCurrentModel] = useState<HologramModel | null>(null);
 
   const responseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const modelChangeTimeout = useRef<NodeJS.Timeout | null>(null);
   const [fadeClass, setFadeClass] = useState('');
 
-  const waitForMicToDisable = (): Promise<void> => {
-    return new Promise((resolve) => {
-      const check = setInterval(() => {
-        const micIsOff = !micEnabled; // use your actual mic state
-        if (micIsOff) {
-          clearInterval(check);
-          resolve();
-        }
-      }, 100);
-    });
-  };
+  // Initialize model from route or localStorage
+  useEffect(() => {
+    const initializeModel = () => {
+      // First priority: model from route state (direct navigation)
+      if (location.state?.model) {
+        const model = location.state.model;
+        setSelectedModel(model);
+        setOriginalModel(model);
+        localStorage.setItem('selectedModel', JSON.stringify(model));
+        return;
+      }
 
-  const switchModelWithFade = (model: HologramModel) => {
+      // Second priority: model from localStorage
+      const savedModel = localStorage.getItem('selectedModel');
+      if (savedModel) {
+        try {
+          const model = JSON.parse(savedModel);
+          setSelectedModel(model);
+          setOriginalModel(model);
+          return;
+        } catch (e) {
+          console.error('Failed to parse saved model', e);
+        }
+      }
+
+      // Fallback to default model
+      setSelectedModel(DEFAULT_MODEL);
+      setOriginalModel(DEFAULT_MODEL);
+    };
+
+    initializeModel();
+  }, [location.state]);
+
+  const switchModelWithFade = useCallback((model: HologramModel) => {
+    // Clear any pending timeouts
+    if (modelChangeTimeout.current) {
+      clearTimeout(modelChangeTimeout.current);
+    }
+
+    // Start fade out animation
     setFadeClass('fade-out');
-    setTimeout(() => {
+
+    // After fade out completes, change model and fade in
+    modelChangeTimeout.current = setTimeout(() => {
       setSelectedModel(model);
       setFadeClass('fade-in');
-      setTimeout(() => setFadeClass(''), 400); // clear class after animation
-    }, 200); // delay fade-out before switching
-  };
+
+      // After fade in completes, remove animation classes
+      modelChangeTimeout.current = setTimeout(() => {
+        setFadeClass('');
+        modelChangeTimeout.current = null;
+      }, 400);
+    }, 200);
+  }, []);
 
   // Check if running on Windows
   useEffect(() => {
@@ -141,7 +173,6 @@ const Hologram: React.FC = () => {
     if (isWindows) {
       const playInitialSound = async () => {
         try {
-          // Force Suda static model first
           switchModelWithFade(SUDA_MODEL);
           setIsResponding(true);
           await playAudio('success');
@@ -153,7 +184,7 @@ const Hologram: React.FC = () => {
       };
       playInitialSound();
     }
-  }, [isWindows]);
+  }, [isWindows, switchModelWithFade]);
 
   // Handle model switching when responding
   useEffect(() => {
@@ -172,96 +203,39 @@ const Hologram: React.FC = () => {
         switchModelWithFade(originalModel);
       }
     }
-  }, [isResponding, selectedModel, originalModel]);
+  }, [isResponding, selectedModel, originalModel, switchModelWithFade]);
 
+  // Cleanup timeouts on unmount
   useEffect(() => {
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
-          const target = mutation.target as HTMLElement;
-          if (target.id === 'main-content') {
-            target.removeAttribute('aria-hidden');
-          }
-        }
-      });
-    });
-
-    const mainContent = document.getElementById('main-content');
-    if (mainContent) observer.observe(mainContent, { attributes: true });
-
     return () => {
-      observer.disconnect();
+      if (modelChangeTimeout.current) {
+        clearTimeout(modelChangeTimeout.current);
+      }
+      if (responseTimeoutRef.current) {
+        clearTimeout(responseTimeoutRef.current);
+      }
     };
   }, []);
 
-  useEffect(() => {
-    const fromRoute = location.state?.model;
-    if (fromRoute) {
-      switchModelWithFade(fromRoute);
-      setOriginalModel(fromRoute);
-      localStorage.setItem('selectedModel', JSON.stringify(fromRoute));
-    } else {
-      const saved = localStorage.getItem('selectedModel');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        switchModelWithFade(parsed);
-        setOriginalModel(parsed);
-      }
-    }
-  }, [location.state]);
-
-  const playHelloSound = async () => {
-    setIsResponding(true);
-    return new Promise<void>(resolve => {
-      const audio = new Audio(hello);
-      audio.play()
-        .then(() => {
-          audio.onended = () => {
-            setIsResponding(false);
-            resolve();
-          };
-        })
-        .catch(() => {
-          setIsResponding(false);
-          resolve();
-        });
-    });
-  };
-
-  const handleReverseClick = async () => {
-    setIsReversed(!isReversed);
-    try {
-      await playAudio('clem');
-    } catch (e) {
-      console.error("Clem sound error:", e);
-    }
-  };
-
   const toggleMic = async () => {
-    // 1. INSTANT visual toggle
     const newMicState = !micEnabled;
     setMicEnabled(newMicState);
 
     if (!newMicState) {
-      // Turning OFF
       VoiceService.stopListening();
       setIsVoiceActive(false);
       return;
     }
 
-    // Turning ON
     try {
-      // Pause music if playing
       if (isMusicPlaying) {
         musicPlayerRef.current?.pause();
         setIsMusicPlaying(false);
       }
 
-      // 2. SHOW SudaResponse.png and PLAY AUDIO
       setIsResponding(true);
       switchModelWithFade(SUDA_RESPONSE_MODEL);
 
-      // Play suda1.wav and WAIT
       await new Promise<void>(resolve => {
         const audio = new Audio(hello);
         audio.onended = () => {
@@ -275,15 +249,13 @@ const Hologram: React.FC = () => {
         audio.play().catch(() => resolve());
       });
 
-      // 3. ONLY activate mic if still toggled ON
       if (newMicState) {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach(track => track.stop()); // Cleanup
+        stream.getTracks().forEach(track => track.stop());
 
         const started = await VoiceService.startListening(handleVoiceCommand);
         setIsVoiceActive(started);
 
-        // If failed, revert visual state
         if (!started) setMicEnabled(false);
       }
     } catch (error) {
@@ -301,10 +273,9 @@ const Hologram: React.FC = () => {
 
     try {
       setIsModelChanging(true);
-      switchModelWithFade(SUDA_MODEL); // Step 1: show Suda.png right away
+      switchModelWithFade(SUDA_MODEL);
       VoiceService.setSystemAudioState(true);
 
-      // Load model info first
       let resolvedModel: HologramModel | null = null;
 
       if (typeof modelName !== 'string') {
@@ -318,10 +289,8 @@ const Hologram: React.FC = () => {
         ) || null;
       }
 
-      // Step 2: Play success sound while Suda.png is visible
       await playAudio('success');
 
-      // Step 3: After sound, set actual model
       if (resolvedModel) {
         switchModelWithFade(resolvedModel);
         setOriginalModel(resolvedModel);
@@ -334,17 +303,15 @@ const Hologram: React.FC = () => {
       VoiceService.setSystemAudioState(false);
       setIsModelChanging(false);
     }
-  }, []);
+  }, [switchModelWithFade]);
 
   const handleVoiceCommand = useCallback(async (command: string) => {
     try {
       setIsResponding(true);
       clearTimeout(responseTimeoutRef.current as NodeJS.Timeout);
 
-      // Switch to response model (e.g., Cephalon Suda responds)
       switchModelWithFade(SUDA_RESPONSE_MODEL);
 
-      // Parse the command
       const result = await CommandList(command);
 
       if (result.action === 'changeModel' && result.model) {
@@ -352,7 +319,7 @@ const Hologram: React.FC = () => {
       }
       else if (result.action === 'playMusic') {
         if (micEnabled) {
-          toggleMic(); // turn off mic
+          toggleMic();
           await new Promise(resolve => setTimeout(resolve, 600));
         }
 
@@ -362,13 +329,11 @@ const Hologram: React.FC = () => {
           musicPlayerRef.current?.searchTrack?.(result.musicTitle);
         }
 
-        // Reset model after music command
         if (result.shouldResetModel) {
           setTimeout(() => setIsResponding(false), 2000);
         }
       }
       else {
-        // Handle all other cases (invalid, timeout, etc.)
         if (result.shouldResetModel) {
           setTimeout(() => setIsResponding(false), 2000);
         }
@@ -378,22 +343,20 @@ const Hologram: React.FC = () => {
       console.error("Command error:", error);
       setIsResponding(false);
     }
-  }, [handleModelChange, micEnabled, toggleMic]);
+  }, [handleModelChange, micEnabled, toggleMic, switchModelWithFade]);
 
   useIonViewWillEnter(() => {
-    // Blur any focused element
     document.activeElement instanceof HTMLElement && document.activeElement.blur();
 
-    // Always play success sound + show Suda.png
     const playIntro = async () => {
       try {
-        switchModelWithFade(SUDA_MODEL);     // Show Suda
-        setIsResponding(true);            // Trigger animation/effect
-        await playAudio('success');       // Play welcome sound
+        switchModelWithFade(SUDA_MODEL);
+        setIsResponding(true);
+        await playAudio('success');
       } catch (err) {
         console.error("Intro sound error:", err);
       } finally {
-        setTimeout(() => setIsResponding(false), 2000); // Reset after delay
+        setTimeout(() => setIsResponding(false), 2000);
       }
     };
 
@@ -409,6 +372,15 @@ const Hologram: React.FC = () => {
     clearTimeout(responseTimeoutRef.current as NodeJS.Timeout);
     clearTimeout(modelChangeTimeout.current as NodeJS.Timeout);
   });
+
+  const handleReverseClick = async () => {
+    setIsReversed(!isReversed);
+    try {
+      await playAudio('clem');
+    } catch (e) {
+      console.error("Clem sound error:", e);
+    }
+  };
 
   return (
     <IonPage style={{ backgroundColor: 'black' }}>
@@ -440,15 +412,13 @@ const Hologram: React.FC = () => {
           <div className={`reflection-base ${isReversed ? 'reversed' : ''}`}>
             {['top', 'right', 'bottom', 'left'].map((position) => (
               <div key={position} className={`reflection-image ${position}`}>
-                <div
-                  className={`model-image-wrapper ${fadeClass}`} // <-- add fadeClass state
-                >
+                <div className={`model-image-wrapper ${fadeClass}`}>
                   <img
                     src={selectedModel.src}
                     alt={`${position} Reflection`}
                     className={`
-    ${selectedModel.name === 'Suda' ? 'suda-glow-animation suda-spin' : ''}
-  `}
+                      ${selectedModel.name === 'Suda' ? 'suda-glow-animation suda-spin' : ''}
+                    `}
                     onLoad={() => {
                       if (
                         selectedModel.id === SUDA_MODEL.id ||
@@ -461,7 +431,6 @@ const Hologram: React.FC = () => {
                     }}
                     onError={(e) => (e.currentTarget.src = DEFAULT_MODEL.src)}
                   />
-
                 </div>
               </div>
             ))}
@@ -485,7 +454,7 @@ const Hologram: React.FC = () => {
           onPlayStateChange={setIsMusicPlaying}
           onPlayRequest={() => {
             if (micEnabled) {
-              toggleMic(); // This will turn off the mic when music starts
+              toggleMic();
             }
           }}
         />
