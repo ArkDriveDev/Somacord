@@ -311,3 +311,17 @@ ion-content.hologram-container {
 .suda-spin {
   animation: spin360 4s linear infinite;
 }
+/* Initial page load fade-in */
+.fade-in-initial {
+  animation: fadeInInitial 1s ease-in-out;
+}
+
+@keyframes fadeInInitial {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Make sure IonPage has the proper starting point */
+ion-page {
+  opacity: 1;
+}
