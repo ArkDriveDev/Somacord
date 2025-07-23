@@ -20,8 +20,9 @@ class VoiceService {
   private restartAttempts = 0;
   private readonly MAX_RESTART_ATTEMPTS = 3;
   private isRestarting = false;
+  private recognitionLang = 'en-US';
 
-  // New model selection state
+  // Model selection state
   private isExpectingModel = false;
   private modelChangeCallback: ((modelName: string) => void) | null = null;
   private modelTimeout: number | null = null;
@@ -29,6 +30,22 @@ class VoiceService {
   constructor() {
     this.initRecognition();
     this.initAudioContext();
+    this.setupConnectionListeners();
+  }
+
+  private setupConnectionListeners(): void {
+    window.addEventListener('online', this.handleConnectionChange.bind(this));
+    window.addEventListener('offline', this.handleConnectionChange.bind(this));
+  }
+
+  private handleConnectionChange(): void {
+    if (navigator.onLine && this.isListening) {
+      console.log('Network connection restored - attempting to restart recognition');
+      this.safeRestart();
+    } else if (!navigator.onLine) {
+      console.warn('Network connection lost - stopping recognition');
+      this.stopListening();
+    }
   }
 
   private initAudioContext(): void {
@@ -52,7 +69,7 @@ class VoiceService {
     this.recognition = new SpeechRecog();
     this.recognition.continuous = true;
     this.recognition.interimResults = false;
-    this.recognition.lang = "en-US";
+    this.recognition.lang = this.recognitionLang;
     this.recognition.maxAlternatives = 1;
 
     this.recognition.onaudiostart = () => {
@@ -77,6 +94,14 @@ class VoiceService {
 
     this.recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       const ignorableErrors = ['no-speech', 'audio-capture'];
+      const networkErrors = ['network', 'service-not-allowed'];
+      
+      if (networkErrors.includes(event.error)) {
+        console.error("Network error in speech recognition:", event.error);
+        this.handleNetworkError();
+        return;
+      }
+      
       if (!ignorableErrors.includes(event.error)) {
         console.error("Recognition error:", event.error);
       }
@@ -88,6 +113,31 @@ class VoiceService {
         this.safeRestart();
       }
     };
+  }
+
+  private handleNetworkError(): void {
+    if (!navigator.onLine) {
+      console.warn("Device is offline - speech recognition unavailable");
+      this.stopListening();
+      return;
+    }
+
+    this.restartAttempts++;
+    
+    if (this.restartAttempts > this.MAX_RESTART_ATTEMPTS) {
+      console.error("Max network recovery attempts reached");
+      this.stopListening();
+      return;
+    }
+
+    const delay = Math.min(1000 * Math.pow(2, this.restartAttempts), 30000); // Cap at 30s
+    console.log(`Will attempt recovery in ${delay}ms`);
+    
+    setTimeout(() => {
+      if (this.isListening) {
+        this.safeRestart();
+      }
+    }, delay);
   }
 
   private applyAudioConstraints(): void {
@@ -126,23 +176,26 @@ class VoiceService {
         return;
       }
 
-      // More thorough state checking
+      // Check network connection
+      if (!navigator.onLine) {
+        console.warn("Cannot restart recognition - offline");
+        return;
+      }
+
       const currentState = this.getRecognitionState();
       if (currentState === 'running') {
         return;
       }
 
-      // Ensure clean stop before restart
       if (currentState !== 'inactive') {
         try {
           this.recognition.stop();
-          await new Promise(resolve => setTimeout(resolve, 200)); // Increased delay
+          await new Promise(resolve => setTimeout(resolve, 200));
         } catch (stopError) {
           console.warn("Error stopping recognition:", stopError);
         }
       }
 
-      // Additional check before starting
       if (this.isListening && !this.shouldIgnoreInput() && this.getRecognitionState() === 'inactive') {
         try {
           this.recognition.start();
@@ -171,7 +224,15 @@ class VoiceService {
       this.isRestarting = false;
     }
   }
-  // MODEL SELECTION METHODS
+
+  // Public API Methods
+  public setLanguage(lang: string): void {
+    this.recognitionLang = lang;
+    if (this.recognition) {
+      this.recognition.lang = lang;
+    }
+  }
+
   public startModelSelection(timeoutMs: number, callback: (modelName: string) => void): void {
     this.isExpectingModel = true;
     this.modelChangeCallback = callback;
@@ -194,9 +255,13 @@ class VoiceService {
     return this.isExpectingModel;
   }
 
-  // EXISTING VOICE SERVICE METHODS
   public async startListening(onResult: (command: string) => void): Promise<boolean> {
     if (!this.recognition) return false;
+
+    if (!navigator.onLine) {
+      console.warn("Cannot start listening - offline");
+      return false;
+    }
 
     this.onResultCallback = onResult;
     this.isListening = true;
@@ -277,7 +342,9 @@ class VoiceService {
       isSpeaking: this.isSpeaking,
       systemAudioPlaying: this.systemAudioPlaying,
       recognitionActive: this.getRecognitionState(),
-      expectingModel: this.isExpectingModel
+      expectingModel: this.isExpectingModel,
+      language: this.recognitionLang,
+      online: navigator.onLine
     };
   }
 }
