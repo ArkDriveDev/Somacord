@@ -1,11 +1,12 @@
 import {
   IonContent, IonPage, IonHeader, IonToolbar,
-  IonTitle, useIonViewWillEnter, useIonViewWillLeave
+  IonTitle, useIonViewWillEnter, useIonViewWillLeave,
+  useIonViewDidEnter
 } from '@ionic/react';
 import { useLocation } from 'react-router-dom';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { IonIcon } from '@ionic/react';
-import { chevronDownOutline, micOutline, micOffOutline } from 'ionicons/icons';
+import { chevronDownOutline } from 'ionicons/icons';
 import './Hologram.css';
 import Octavia from '../Assets/Warframes/Octavia.png';
 import VoiceService from '../services/VoiceService';
@@ -372,6 +373,15 @@ const Hologram: React.FC = () => {
     setMicEnabled(false);
     clearTimeout(responseTimeoutRef.current as NodeJS.Timeout);
     clearTimeout(modelChangeTimeout.current as NodeJS.Timeout);
+  });
+
+  useIonViewDidEnter(() => {
+    // This will remove the initial fade class after the animation completes
+    const timer = setTimeout(() => {
+      setInitialFade('');
+    }, 1000); // Match this duration with your CSS animation duration
+
+    return () => clearTimeout(timer);
   });
 
   const handleReverseClick = async () => {
