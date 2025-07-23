@@ -311,17 +311,37 @@ ion-content.hologram-container {
 .suda-spin {
   animation: spin360 4s linear infinite;
 }
-/* Initial page load fade-in */
-.fade-in-initial {
-  animation: fadeInInitial 1s ease-in-out;
+/* Add these new styles */
+.page-transition {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  z-index: 1000;
+  animation: fadeInFromBack 1.5s ease-out forwards;
+  transform-origin: center;
 }
 
-@keyframes fadeInInitial {
+@keyframes fadeInFromBack {
+  0% {
+    opacity: 0;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Ensure content starts hidden */
+.hologram-content {
+  opacity: 0;
+  animation: contentFadeIn 1s ease-out 0.5s forwards;
+}
+
+@keyframes contentFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-
-/* Make sure IonPage has the proper starting point */
-ion-page {
-  opacity: 1;
 }
