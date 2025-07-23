@@ -394,92 +394,97 @@ const Hologram: React.FC = () => {
   };
 
   return (
-    <IonPage style={{ backgroundColor: 'black' }} className={initialFade}>
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>{selectedModel.name}</IonTitle>
-        </IonToolbar>
-      </IonHeader>
+    <IonPage style={{ backgroundColor: 'black' }}>
+      {isTransitioning && <div className="page-transition" />}
 
-      <IonContent fullscreen className="hologram-container">
-        <button
-          onClick={toggleMic}
-          className={`mic-toggle-button ${micEnabled ? 'active' : ''}`}
-          title={micEnabled ? "Turn off microphone" : "Turn on microphone"}
-        >
-          <img src={micimage} alt="Mic Toggle" />
-        </button>
+      {/* Main content */}
+      <div className="hologram-content">
+        <IonHeader>
+          <IonToolbar>
+            <IonTitle>{selectedModel.name}</IonTitle>
+          </IonToolbar>
+        </IonHeader>
 
-        <div className={`hologram-center ${isResponding &&
-          (selectedModel.id === SUDA_MODEL.id || selectedModel.id === SUDA_RESPONSE_MODEL.id)
-          }`}>
-          <img
-            src={reverseImage}
-            alt="Reverse Hologram"
-            className="center-image"
-            onClick={handleReverseClick}
-            onError={(e) => console.error("Failed to load center image")}
-          />
-          <div className={`reflection-base ${isReversed ? 'reversed' : ''}`}>
-            {['top', 'right', 'bottom', 'left'].map((position) => (
-              <div key={position} className={`reflection-image ${position}`}>
-                <div className={`model-image-wrapper ${fadeClass}`}>
-                  <img
-                    src={selectedModel.src}
-                    alt={`${position} Reflection`}
-                    className={`
+        <IonContent fullscreen className="hologram-container">
+          <button
+            onClick={toggleMic}
+            className={`mic-toggle-button ${micEnabled ? 'active' : ''}`}
+            title={micEnabled ? "Turn off microphone" : "Turn on microphone"}
+          >
+            <img src={micimage} alt="Mic Toggle" />
+          </button>
+
+          <div className={`hologram-center ${isResponding &&
+            (selectedModel.id === SUDA_MODEL.id || selectedModel.id === SUDA_RESPONSE_MODEL.id)
+            }`}>
+            <img
+              src={reverseImage}
+              alt="Reverse Hologram"
+              className="center-image"
+              onClick={handleReverseClick}
+              onError={(e) => console.error("Failed to load center image")}
+            />
+            <div className={`reflection-base ${isReversed ? 'reversed' : ''}`}>
+              {['top', 'right', 'bottom', 'left'].map((position) => (
+                <div key={position} className={`reflection-image ${position}`}>
+                  <div className={`model-image-wrapper ${fadeClass}`}>
+                    <img
+                      src={selectedModel.src}
+                      alt={`${position} Reflection`}
+                      className={`
                       ${selectedModel.name === 'Suda' ? 'suda-glow-animation suda-spin' : ''}
                     `}
-                    onLoad={() => {
-                      if (
-                        selectedModel.id === SUDA_MODEL.id ||
-                        selectedModel.id === SUDA_RESPONSE_MODEL.id
-                      ) {
-                        setIsPlayingSudaAudio(true);
-                      } else {
-                        setIsPlayingSudaAudio(false);
-                      }
-                    }}
-                    onError={(e) => (e.currentTarget.src = DEFAULT_MODEL.src)}
-                  />
+                      onLoad={() => {
+                        if (
+                          selectedModel.id === SUDA_MODEL.id ||
+                          selectedModel.id === SUDA_RESPONSE_MODEL.id
+                        ) {
+                          setIsPlayingSudaAudio(true);
+                        } else {
+                          setIsPlayingSudaAudio(false);
+                        }
+                      }}
+                      onError={(e) => (e.currentTarget.src = DEFAULT_MODEL.src)}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+        </IonContent>
+
+        <div
+          className={`music-player-container ${showMusicPlayer ? 'music-player-visible' : 'music-player-hidden'}`}
+        >
+          <button
+            onClick={() => setShowMusicPlayer(false)}
+            className="music-player-toggle-close"
+            title="Hide Music Player"
+          >
+            <IonIcon icon={chevronDownOutline} />
+          </button>
+          <Musics
+            ref={musicPlayerRef}
+            isMicActive={micEnabled}
+            onPlayStateChange={setIsMusicPlaying}
+            onPlayRequest={() => {
+              if (micEnabled) {
+                toggleMic();
+              }
+            }}
+          />
         </div>
-      </IonContent>
 
-      <div
-        className={`music-player-container ${showMusicPlayer ? 'music-player-visible' : 'music-player-hidden'}`}
-      >
-        <button
-          onClick={() => setShowMusicPlayer(false)}
-          className="music-player-toggle-close"
-          title="Hide Music Player"
-        >
-          <IonIcon icon={chevronDownOutline} />
-        </button>
-        <Musics
-          ref={musicPlayerRef}
-          isMicActive={micEnabled}
-          onPlayStateChange={setIsMusicPlaying}
-          onPlayRequest={() => {
-            if (micEnabled) {
-              toggleMic();
-            }
-          }}
-        />
+        {!showMusicPlayer && (
+          <button
+            onClick={() => setShowMusicPlayer(true)}
+            className="music-player-toggle-open"
+            title="Show Music Player"
+          >
+            <img src={floating} alt="Open Music Player" style={{ width: '40px', height: '40px' }} />
+          </button>
+        )}
       </div>
-
-      {!showMusicPlayer && (
-        <button
-          onClick={() => setShowMusicPlayer(true)}
-          className="music-player-toggle-open"
-          title="Show Music Player"
-        >
-          <img src={floating} alt="Open Music Player" style={{ width: '40px', height: '40px' }} />
-        </button>
-      )}
     </IonPage>
   );
 };
