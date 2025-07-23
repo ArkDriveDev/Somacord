@@ -106,6 +106,7 @@ const Hologram: React.FC = () => {
   const responseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const modelChangeTimeout = useRef<NodeJS.Timeout | null>(null);
   const [fadeClass, setFadeClass] = useState('');
+  const [initialFade, setInitialFade] = useState('fade-in-initial');
 
   // Initialize model from route or localStorage
   useEffect(() => {
